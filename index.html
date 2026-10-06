@@ -19,9 +19,10 @@
    head, before the first paint. Decal Fix's own addresses never match. */
 (function(){
   var h = location.hostname.replace(/\.$/, '').toLowerCase();
-  /* both of Spawn Notebook's addresses: the GitHub one and its Cloudflare
-     backup (claimed 6 Oct). Decal Fix's addresses never match. */
-  if(h === 'spwnapp.github.io' || h === 'spwnapp.pages.dev'){
+  /* Spawn Notebook's ONE address. spwnapp.pages.dev was retired 6 Oct
+     (spawn-121) and serves only a has-moved page. Decal Fix's addresses
+     never match. */
+  if(h === 'spwnapp.github.io'){
     document.documentElement.classList.add('spwn');
     document.title = 'Spawn Notebook';
   }
@@ -2903,13 +2904,12 @@ const BUILD = 19;
 const LIVE_ORIGINS = ['spawn-solutions.pages.dev',
                       'decalfix.pages.dev',
                       'decalfix.github.io',
-                      /* every notebook shop (stage 4, owned: org spwnapp),
-                         and its Cloudflare backup - claimed 6 Oct as the
-                         `spwnapp` Pages project, which is why it may join:
-                         an unclaimed name on this list would be production
-                         for whoever registered it first. */
-                      'spwnapp.github.io',
-                      'spwnapp.pages.dev'];
+                      /* every notebook shop (stage 4, owned: org spwnapp).
+                         ONLY this one: spwnapp.pages.dev was retired 6 Oct
+                         (spawn-121, "use only the github link") and must
+                         never come back on here while anything there could
+                         serve the app. */
+                      'spwnapp.github.io'];
 /* `decalfix.github.io.` and `decalfix.github.io` are the same site and two
    different ORIGINS - separate session, separate cache, separate worker. A
    trailing root dot is legal in a URL and browsers keep it, so an address
