@@ -119,10 +119,23 @@
   #auth h1,#setup h1,#shopnew h1{font-size:30px;margin:0 0 2px}
   #auth p.s,#setup p.s,#shopnew p.s{color:var(--text-2);font-size:12px;font-weight:600;margin:0 0 18px}
   #auth .row,#setup .row,#shopnew .row{display:grid;gap:12px;margin-bottom:14px}
+  /* SPAWN NOTEBOOK'S BACKGROUND (7 Oct, "change the background into something
+     aesthetic"): a soft colour wash instead of the honeycomb - four blurred
+     glows on cream, behind the sign-in, Start your shop and the app itself.
+     The first glow is var(--red), which applyBrand turns into the shop's own
+     colour, so a shop's background takes its logo's colour too. html.spwn
+     only: Decal Fix keeps its honeycomb. */
+  html.spwn body{background-color:#f8f4ef;
+    background-image:
+      radial-gradient(44rem 34rem at -6% -8%, color-mix(in srgb, var(--red) 22%, transparent), transparent 70%),
+      radial-gradient(38rem 30rem at 106% 4%, rgba(245,158,11,.20), transparent 70%),
+      radial-gradient(42rem 36rem at 92% 108%, rgba(124,58,237,.13), transparent 70%),
+      radial-gradient(36rem 30rem at -4% 104%, rgba(13,148,136,.13), transparent 70%);
+    background-attachment:fixed}
+  html.spwn #auth,html.spwn #setup{background:transparent}
   /* Spawn Notebook's own sign-in and device-setup screens wear the same card
      as Start your shop (7 Oct, "make everything pretty"). html.spwn only -
      Decal Fix's sign-in is untouched. */
-  html.spwn #auth,html.spwn #setup{background:radial-gradient(120% 70% at 50% -10%, color-mix(in srgb, var(--red) 14%, transparent), transparent 70%), var(--paper)}
   html.spwn #auth .box,html.spwn #setup .box{max-width:440px;border-radius:22px;
     box-shadow:0 1px 2px rgba(0,0,0,.06), 0 18px 48px -18px rgba(0,0,0,.28)}
   html.spwn #auth input,html.spwn #setup input{border-radius:12px}
@@ -131,7 +144,7 @@
      --wz is the screen's accent: Spawn red until a logo is chosen, then the
      logo's own colour (darkened for white text by brandShades). */
   #shopnew{--wz:var(--red);--wz-deep:var(--red-deep);
-    background:radial-gradient(120% 70% at 50% -10%, color-mix(in srgb, var(--wz) 16%, transparent), transparent 70%), var(--paper)}
+    background:radial-gradient(120% 70% at 50% -10%, color-mix(in srgb, var(--wz) 16%, transparent), transparent 70%)}
   #shopnew .box{max-width:440px;padding:26px 24px 20px;border-radius:22px;
     box-shadow:0 1px 2px rgba(0,0,0,.06), 0 18px 48px -18px rgba(0,0,0,.28)}
   .snhead{margin-bottom:14px}
