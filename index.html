@@ -119,6 +119,73 @@
   #auth h1,#setup h1,#shopnew h1{font-size:30px;margin:0 0 2px}
   #auth p.s,#setup p.s,#shopnew p.s{color:var(--text-2);font-size:12px;font-weight:600;margin:0 0 18px}
   #auth .row,#setup .row,#shopnew .row{display:grid;gap:12px;margin-bottom:14px}
+  /* Spawn Notebook's own sign-in and device-setup screens wear the same card
+     as Start your shop (7 Oct, "make everything pretty"). html.spwn only -
+     Decal Fix's sign-in is untouched. */
+  html.spwn #auth,html.spwn #setup{background:radial-gradient(120% 70% at 50% -10%, color-mix(in srgb, var(--red) 14%, transparent), transparent 70%), var(--paper)}
+  html.spwn #auth .box,html.spwn #setup .box{max-width:440px;border-radius:22px;
+    box-shadow:0 1px 2px rgba(0,0,0,.06), 0 18px 48px -18px rgba(0,0,0,.28)}
+  html.spwn #auth input,html.spwn #setup input{border-radius:12px}
+  html.spwn #auth .btn,html.spwn #setup .btn{border-radius:14px;min-height:50px}
+  /* ── START YOUR SHOP, one question at a time (7 Oct) ──
+     --wz is the screen's accent: Spawn red until a logo is chosen, then the
+     logo's own colour (darkened for white text by brandShades). */
+  #shopnew{--wz:var(--red);--wz-deep:var(--red-deep);
+    background:radial-gradient(120% 70% at 50% -10%, color-mix(in srgb, var(--wz) 16%, transparent), transparent 70%), var(--paper)}
+  #shopnew .box{max-width:440px;padding:26px 24px 20px;border-radius:22px;
+    box-shadow:0 1px 2px rgba(0,0,0,.06), 0 18px 48px -18px rgba(0,0,0,.28)}
+  .snhead{margin-bottom:14px}
+  .snbrand{display:inline-block;font-weight:900;font-size:13px;letter-spacing:.02em;color:var(--text);
+    padding:4px 10px;border-radius:999px;background:var(--surface-2)}
+  .snbrand b{color:var(--wz)}
+  #shopnew h1{font-size:26px;line-height:1.15;margin:12px 0 4px}
+  #shopnew .s{margin:0}
+  .sncodel input{font:800 22px/1 inherit;letter-spacing:.12em;text-align:center;text-transform:uppercase;padding:16px 12px}
+  .snbig{width:100%;margin-top:14px;min-height:52px;font-size:16px;border-radius:14px;background:var(--wz)}
+  .snbig:hover{background:var(--wz-deep)}
+  .wzbar{height:6px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin:4px 0 6px}
+  .wzbar i{display:block;height:100%;width:0;border-radius:inherit;background:var(--wz);transition:width .35s ease}
+  .wzcount{font-size:12px;font-weight:700;color:var(--text-2);margin:0 0 10px;letter-spacing:.04em;text-transform:uppercase}
+  .wzcard{animation:wzIn .28s ease both}
+  .wzcard.back{animation-name:wzBack}
+  @keyframes wzIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+  @keyframes wzBack{from{opacity:0;transform:translateY(-14px) scale(.98)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){ .wzcard{animation:none} .wzbar i{transition:none} }
+  .wzcard h2{font-size:22px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+  .wzhint{font-size:14px;color:var(--text-2);margin:0 0 14px;line-height:1.4}
+  .wzcard input{width:100%;font-size:18px;padding:14px 14px;border-radius:14px;margin-bottom:10px}
+  .wzcard input:focus{outline:3px solid color-mix(in srgb, var(--wz) 35%, transparent);outline-offset:1px;border-color:var(--wz)}
+  .wzpw{position:relative}
+  .wzpw input{padding-right:72px}
+  .wzeye{position:absolute;right:8px;top:8px;height:38px;padding:0 12px;border:0;border-radius:10px;
+    background:var(--surface-2);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+  .wznav{display:flex;gap:10px;margin-top:6px}
+  .wznav .btn{flex:1 1 0;min-height:50px;border-radius:14px;font-size:16px}
+  .wznav #wzNext,.wznav #snGo{flex:2 1 0;background:var(--wz)}
+  .wznav #wzNext:hover,.wznav #snGo:hover{background:var(--wz-deep)}
+  .wzlogo{position:relative;display:grid;place-items:center;height:128px;border:2px dashed var(--line-strong);border-radius:16px;
+    margin-bottom:6px;background:var(--surface-2);cursor:pointer;text-align:center}
+  .wzlogo:hover,.wzlogo:focus-within{border-color:var(--wz)}
+  .wzlogo img{max-width:70%;max-height:96px;object-fit:contain}
+  .wzlogo span{color:var(--text-2);font-size:14px;line-height:1.4}
+  .wzlogo span b{color:var(--wz);font-size:15px}
+  .wzlogo-again{position:absolute;right:10px;bottom:8px;font-size:12px !important;font-weight:700}
+  .wzcard .swatches{margin:8px 0 4px}
+  /* while the questions run, the header is only the badge: the card is the screen */
+  #shopnew.inwiz #snTitle,#shopnew.inwiz #snSub,#shopnew.inwiz #snBack{display:none}
+  #shopnew.inwiz .snhead{margin-bottom:10px}
+  #shopnew .suwho{font-size:13px;font-weight:600;color:var(--text-2);margin:0 0 8px}
+  .wzrev{display:grid;gap:2px;margin-bottom:6px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  /* label ABOVE the answer, so a name gets the row's whole width */
+  .wzrow{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:center;padding:6px 12px;background:#fff}
+  .wzrow + .wzrow{border-top:1px solid var(--line)}
+  .wzrow .k{grid-column:1;font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;line-height:1.2}
+  .wzrow .v{grid-column:1;min-width:0;overflow-wrap:anywhere;font-size:15px;font-weight:600;line-height:1.3}
+  .wzrow .v.none{color:var(--text-2);font-weight:500}
+  .wzrow img{height:24px;max-width:90px;object-fit:contain;vertical-align:middle}
+  .wzrow button{grid-column:2;grid-row:1 / span 2;border:0;background:none;color:var(--wz);font:inherit;font-size:13px;font-weight:800;cursor:pointer;padding:8px 4px}
+  @media (max-height:700px){ #shopnew{padding:12px} #shopnew .box{padding:18px 18px 16px} #shopnew h1{font-size:22px;margin-top:8px}
+    .wzlogo{height:100px} .wzcard h2{font-size:20px} .wzhint{margin-bottom:10px} .wzcard input{padding:12px 14px;margin-bottom:8px} }
   .tabsw{display:flex;gap:6px;margin-bottom:18px}
   .tabsw button{flex:1;border:1.5px solid var(--line-strong);background:#fff;border-radius:9px;height:44px;
                 font-weight:800;font-size:12.5px;letter-spacing:.04em;cursor:pointer;color:var(--text-2)}
@@ -1651,29 +1718,83 @@ try{
      gives the owner a one-time shop code; this screen makes the owner's
      account and the shop through the Worker (/signup/*), then signs in.
      Public sign-up stays closed - the code is the door. -->
+<!-- 7 Oct: ONE QUESTION AT A TIME (Wendell: "the questions should be like a
+     pop up ... the customer does not need to scroll after each question
+     another question then also the uploading of the logo"). Every field
+     keeps its id, and #snGo still creates the shop from all of them, so the
+     wizard is presentation only: one card shows, Next checks it and brings
+     the next one up. The logo is a step of its own, saved right after the
+     shop is made and the owner is signed in. -->
 <section id="shopnew" hidden>
   <div class="box">
-    <h1>Start your shop</h1>
-    <p class="s">With the code Spawn gave you</p>
+    <div class="snhead">
+      <span class="snbrand">Spawn<b> Notebook</b></span>
+      <h1 id="snTitle">Start your shop</h1>
+      <p class="s" id="snSub">With the code Spawn gave you</p>
+    </div>
     <div id="snStep1">
-      <label>Shop code<input id="snCode" autocomplete="off" autocapitalize="characters"
+      <label class="sncodel">Shop code<input id="snCode" autocomplete="off" autocapitalize="characters"
              spellcheck="false" maxlength="13" placeholder="K7Q4M-ZP9RW"></label>
-      <button class="btn" id="snCheck" style="width:100%;margin-top:12px">Continue</button>
+      <button class="btn snbig" id="snCheck">Continue</button>
     </div>
     <div id="snStep2" hidden>
       <p class="suwho" id="snFor"></p>
-      <div class="row">
-        <label>Shop name<input id="snShop" maxlength="60" autocomplete="organization"></label>
-        <label>Your name<input id="snName" maxlength="60" autocomplete="name"></label>
-        <label>Email - you sign in with it<input id="snEmail" type="email" inputmode="email" autocomplete="email"></label>
-        <label>Password - at least 8 characters<input id="snPass" type="password" autocomplete="new-password"></label>
-        <label>The same password again<input id="snPass2" type="password" autocomplete="new-password"></label>
-        <label>Address (optional)<input id="snAddr" maxlength="160" autocomplete="street-address"></label>
-        <label>Phone (optional)<input id="snPhone" maxlength="60" inputmode="tel" autocomplete="tel"></label>
+      <div class="wzbar" aria-hidden="true"><i id="wzFill"></i></div>
+      <p class="wzcount" id="wzCount"></p>
+      <div class="wzcard" data-step="shop">
+        <h2>What is your shop called?</h2>
+        <p class="wzhint">It goes on your claim stubs and the top of the app.</p>
+        <input id="snShop" maxlength="60" autocomplete="organization" placeholder="e.g. Juan's Print">
       </div>
-      <p class="small muted" style="margin:6px 0 0">Write the email and password down somewhere safe.
-        A forgotten password is reset by email - look in spam.</p>
-      <button class="btn" id="snGo" style="width:100%;margin-top:12px">Create my shop</button>
+      <div class="wzcard" data-step="name" hidden>
+        <h2>And your name?</h2>
+        <p class="wzhint">You are the owner. Your staff can be added later.</p>
+        <input id="snName" maxlength="60" autocomplete="name" placeholder="Your full name">
+      </div>
+      <div class="wzcard" data-step="email" hidden>
+        <h2>Your email</h2>
+        <p class="wzhint">You sign in with it. A forgotten password is reset there - look in spam too.</p>
+        <input id="snEmail" type="email" inputmode="email" autocomplete="email" placeholder="Your email address">
+      </div>
+      <div class="wzcard" data-step="pass" hidden>
+        <h2>Choose a password</h2>
+        <p class="wzhint">At least 8 characters. Write it down somewhere safe.</p>
+        <div class="wzpw"><input id="snPass" type="password" autocomplete="new-password" placeholder="Password">
+          <button type="button" class="wzeye" id="snShowPw">Show</button></div>
+        <input id="snPass2" type="password" autocomplete="new-password" placeholder="The same password again">
+      </div>
+      <div class="wzcard" data-step="logo" hidden>
+        <h2>Your logo</h2>
+        <p class="wzhint">Optional. The app takes its colours from it.</p>
+        <label class="wzlogo">
+          <img id="snLogoImg" alt="Your logo" hidden>
+          <span id="snLogoNone"><b>Tap to choose a picture</b><br>PNG or JPG</span>
+          <span class="wzlogo-again" id="snLogoAgain" hidden>Tap to change</span>
+          <input type="file" id="snLogo" accept="image/png,image/jpeg,image/webp" hidden>
+        </label>
+        <div class="swatches" id="snSw" role="group" aria-label="The app's colour"></div>
+      </div>
+      <div class="wzcard" data-step="addr" hidden>
+        <h2>Where is your shop?</h2>
+        <p class="wzhint">Optional. It is printed on the claim stub.</p>
+        <input id="snAddr" maxlength="160" autocomplete="street-address" placeholder="e.g. Rizal Ave, Dipolog City">
+      </div>
+      <div class="wzcard" data-step="phone" hidden>
+        <h2>The shop's phone number</h2>
+        <p class="wzhint">Optional. It is printed on the claim stub.</p>
+        <input id="snPhone" maxlength="60" inputmode="tel" autocomplete="tel" placeholder="09xx xxx xxxx">
+      </div>
+      <div class="wzcard" data-step="review" hidden>
+        <h2>All set?</h2>
+        <p class="wzhint">Check it once. Tap Change to fix anything.</p>
+        <div class="wzrev" id="wzRev"></div>
+      </div>
+      <div class="wznav">
+        <button type="button" class="btn ghost" id="wzBack">Back</button>
+        <button type="button" class="btn" id="wzNext">Next</button>
+        <!-- the last card's Next: it sits in the same place, so the whole summary fits -->
+        <button type="button" class="btn" id="snGo" hidden>Create my shop</button>
+      </div>
     </div>
     <div class="msg" id="snMsg"></div>
     <button type="button" class="linky" id="snBack">Back to sign in</button>
@@ -7190,11 +7311,115 @@ const niceShopCode = c => { const t = String(c || '').toUpperCase().replace(/[^A
 let SHOPNEW_PEEK = null;
 function showShopNew(code){
   $('#auth').hidden = true; $('#setup').hidden = true; $('#shopnew').hidden = false;
-  $('#snStep1').hidden = false; $('#snStep2').hidden = true;
+  $('#snStep1').hidden = false; $('#snStep2').hidden = true; $('#shopnew').classList.remove('inwiz');
   $('#snMsg').textContent = ''; $('#snMsg').className = 'msg';
   $('#snCode').value = code ? niceShopCode(code) : '';
   if(code) checkShopCode(); else setTimeout(() => $('#snCode').focus(), 50);
 }
+/* ── the wizard ──
+   WZ is the order of the cards. A card is checked when Next is pressed;
+   the optional ones (logo, address, phone) say Skip while empty. */
+const WZ = ['shop', 'name', 'email', 'pass', 'logo', 'addr', 'phone', 'review'];
+const WZ_OPTIONAL = { logo: () => !SN_LOGO, addr: () => !$('#snAddr').value.trim(), phone: () => !$('#snPhone').value.trim() };
+let WZI = 0, SN_LOGO = null, SN_COLOR = null, SN_COLS = [];
+const snVal = id => $(id).value.trim().replace(/\s+/g, ' ');
+function wzProblem(step){
+  if(step === 'shop'  && snVal('#snShop').length < 2) return "Type the shop's name.";
+  if(step === 'name'  && snVal('#snName').length < 2) return 'Type your name.';
+  if(step === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test($('#snEmail').value.trim())) return 'Type the email address you will sign in with.';
+  if(step === 'pass'  && $('#snPass').value.length < 8) return 'The password needs at least 8 characters.';
+  if(step === 'pass'  && $('#snPass').value !== $('#snPass2').value) return 'The two passwords are not the same.';
+  return '';
+}
+function wzShow(i, back){
+  WZI = Math.max(0, Math.min(WZ.length - 1, i));
+  const step = WZ[WZI];
+  document.querySelectorAll('#shopnew .wzcard').forEach(c => {
+    const on = c.dataset.step === step;
+    c.hidden = !on;
+    if(on){ c.classList.toggle('back', !!back); c.style.animation = 'none'; void c.offsetWidth; c.style.animation = ''; }
+  });
+  $('#wzFill').style.width = Math.round((WZI + 1) / WZ.length * 100) + '%';
+  $('#snFor').hidden = WZI !== 0;            // who the code is for: said once, on the first card
+  $('#wzCount').textContent = step === 'review' ? 'Last step' : 'Question ' + (WZI + 1) + ' of ' + (WZ.length - 1);
+  $('#snMsg').textContent = ''; $('#snMsg').className = 'msg';
+  $('#wzNext').hidden = step === 'review';
+  $('#snGo').hidden = step !== 'review';
+  $('#wzNext').textContent = WZ_OPTIONAL[step] && WZ_OPTIONAL[step]() ? 'Skip' : 'Next';
+  if(step === 'review') paintReview();
+  const f = document.querySelector('#shopnew .wzcard[data-step="' + step + '"] input:not([type=file])');
+  if(f) setTimeout(() => f.focus(), 60);
+}
+function wzNext(){
+  const why = wzProblem(WZ[WZI]);
+  if(why){ $('#snMsg').className = 'msg err'; $('#snMsg').textContent = why; return; }
+  wzShow(WZI + 1);
+}
+function wzBack(){
+  if(WZI === 0){ $('#snStep2').hidden = true; $('#snStep1').hidden = false; $('#shopnew').classList.remove('inwiz');
+                 $('#snSub').textContent = 'With the code Spawn gave you'; return; }
+  wzShow(WZI - 1, true);
+}
+function paintReview(){
+  const row = (k, step, v, html) => `<div class="wzrow"><span class="k">${k}</span>` +
+    (html || `<span class="v${v ? '' : ' none'}">${esc(v || 'Not given')}</span>`) +
+    `<button type="button" data-go="${step}">Change</button></div>`;
+  $('#wzRev').innerHTML =
+    row('Shop', 'shop', snVal('#snShop')) +
+    row('Owner', 'name', snVal('#snName')) +
+    row('Email', 'email', $('#snEmail').value.trim().toLowerCase()) +
+    row('Password', 'pass', '•'.repeat(Math.min(12, $('#snPass').value.length))) +
+    row('Logo', 'logo', '', SN_LOGO ? `<span class="v"><img src="${esc(SN_LOGO)}" alt=""></span>` : '<span class="v none">Not given</span>') +
+    row('Address', 'addr', snVal('#snAddr')) +
+    row('Phone', 'phone', snVal('#snPhone'));
+  $('#wzRev').querySelectorAll('button[data-go]').forEach(b => b.onclick = () => wzShow(WZ.indexOf(b.dataset.go), true));
+}
+/* the wizard's accent follows the logo's colour, as the app will */
+function snAccent(hex){
+  const el = $('#shopnew');
+  if(!hex){ el.style.removeProperty('--wz'); el.style.removeProperty('--wz-deep'); return; }
+  const sh = brandShades(hex);
+  el.style.setProperty('--wz', sh.brand); el.style.setProperty('--wz-deep', sh.deep || sh.brand);
+}
+function paintSnSwatches(){
+  const box = $('#snSw'); box.innerHTML = '';
+  if(!SN_LOGO) return;
+  SN_COLS.concat([null]).forEach((hex, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'sw';
+    b.setAttribute('aria-pressed', String((hex || null) === (SN_COLOR || null)));
+    b.setAttribute('aria-label', hex ? 'Colour ' + (i + 1) : 'Spawn default');
+    b.style.background = hex || 'var(--red)';
+    b.onclick = () => { SN_COLOR = hex; snAccent(hex); paintSnSwatches(); };
+    box.appendChild(b);
+  });
+}
+$('#snLogo').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = '';
+  if(!f) return;
+  $('#snMsg').className = 'msg'; $('#snMsg').textContent = 'Reading your logo…';
+  try{
+    const { data, img } = await shrinkLogo(f);
+    SN_LOGO = data; SN_COLS = logoColours(img); SN_COLOR = SN_COLS[0] || null;
+    $('#snLogoImg').src = data; $('#snLogoImg').hidden = false; $('#snLogoNone').hidden = true; $('#snLogoAgain').hidden = false;
+    snAccent(SN_COLOR); paintSnSwatches();
+    $('#snMsg').textContent = '';
+    $('#wzNext').textContent = 'Next';
+  }catch(err){ $('#snMsg').className = 'msg err'; $('#snMsg').textContent = err.message || 'That picture could not be read.'; }
+});
+$('#wzNext').onclick = () => wzNext();
+$('#wzBack').onclick = () => wzBack();
+$('#snShowPw').onclick = () => {
+  const show = $('#snPass').type === 'password';
+  $('#snPass').type = $('#snPass2').type = show ? 'text' : 'password';
+  $('#snShowPw').textContent = show ? 'Hide' : 'Show';
+};
+['#snAddr', '#snPhone'].forEach(id => $(id).addEventListener('input', () => {
+  $('#wzNext').textContent = WZ_OPTIONAL[WZ[WZI]] && WZ_OPTIONAL[WZ[WZI]]() ? 'Skip' : 'Next'; }));
+/* Enter moves on, the way a phone keyboard's "go" key is expected to */
+document.querySelectorAll('#shopnew .wzcard input:not([type=file])').forEach(inp =>
+  inp.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); if(WZ[WZI] === 'review') createShop(); else wzNext(); } }));
+
 async function checkShopCode(){
   const msg = $('#snMsg');
   msg.className = 'msg'; msg.textContent = 'Checking the code…';
@@ -7204,12 +7429,14 @@ async function checkShopCode(){
   finally{ $('#snCheck').disabled = false; }
   msg.textContent = '';
   $('#snStep1').hidden = true; $('#snStep2').hidden = false;
+  $('#snSub').textContent = 'A few quick questions - one at a time.';
+  $('#shopnew').classList.add('inwiz');
+  wzShow(0);
   const p = SHOPNEW_PEEK;
   const until = p.expires_at ? new Date(p.expires_at).toLocaleDateString('en-PH',
     { timeZone:'Asia/Manila', month:'long', day:'numeric' }) : '';
   $('#snFor').textContent = (p.note ? 'This code is for ' + p.note + '. ' : 'Your code is good. ') +
     (until ? 'It works until ' + until + '.' : '');
-  setTimeout(() => $('#snShop').focus(), 50);
 }
 async function createShop(){
   const msg = $('#snMsg');
@@ -7221,11 +7448,10 @@ async function createShop(){
                  password: $('#snPass').value,
                  address: $('#snAddr').value.trim() || null,
                  contact: $('#snPhone').value.trim() || null };
-  if(body.shop_name.length < 2) return bad("Type the shop's name.");
-  if(body.full_name.length < 2) return bad('Type your name.');
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(body.email)) return bad('Type the email address you will sign in with.');
-  if(body.password.length < 8) return bad('The password needs at least 8 characters.');
-  if(body.password !== $('#snPass2').value) return bad('The two passwords are not the same.');
+  for(const step of ['shop', 'name', 'email', 'pass']){
+    const why = wzProblem(step);
+    if(why){ if(!$('#snStep2').hidden && WZ[WZI] !== step) wzShow(WZ.indexOf(step), true); return bad(why); }
+  }
   $('#snGo').disabled = true; msg.className = 'msg'; msg.textContent = 'Making your shop… this takes a few seconds.';
   let r;
   try{ r = await setupCall('/signup/redeem', body); }
@@ -7246,6 +7472,19 @@ async function createShop(){
   }
   msg.className = 'msg ok';
   msg.textContent = 'Welcome to ' + r.shop_name + '! Opening your shop…';
+  /* The logo chosen in the wizard is saved now that the owner is signed in -
+     the same door as Settings (owner, shops_update), read back so a refused
+     save is said rather than assumed. A logo that will not save never stops
+     the shop opening: it can be added in Settings. */
+  if(SN_LOGO && r.shop_id){
+    try{
+      const { data, error } = await sb.from('shops').update({ logo: SN_LOGO, brand_color: SN_COLOR || null })
+        .eq('id', r.shop_id).select('logo_at');
+      if(error || !data || !data.length) throw error || new Error('not saved');
+      brandWrite({ shop: r.shop_id, edition: 'notebook', name: r.shop_name, color: SN_COLOR || null,
+                   logo_at: data[0].logo_at || null, logo: SN_LOGO });
+    }catch(e){ msg.textContent = 'Welcome to ' + r.shop_name + '! The logo did not save - add it in Settings. Opening your shop…'; }
+  }
   setTimeout(() => location.replace(location.origin + location.pathname), 700);
 }
 $('#aShopNew').onclick = () => showShopNew('');
