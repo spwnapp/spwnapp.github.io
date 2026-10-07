@@ -2917,8 +2917,20 @@ try{
    node polyfills and the fifth only shows up on a phone. */
 import { createClient } from './vendor/supabase.js';
 
-const URL_  = 'https://ybwmdkemhsdtrbmmtver.supabase.co';
-const ANON  = 'sb_publishable_KG01c0kWK0wOUAMoUWigQA_sUuzVbiq';
+/* SPAWN NOTEBOOK HAS ITS OWN DATABASE AND ITS OWN WORKER (7 Oct 2026,
+   separation step 4 - Wendell: "what ever we edit on spawn notebook will not
+   affect decalfix"). On spwnapp.github.io - and ONLY there - the app talks to
+   the `spawn-notebook` Supabase project and the `spawn-signup` Worker.
+   Everywhere else, Decal Fix's addresses included, it uses exactly the
+   project and Worker it always has. The host is read here, raw and with a
+   trailing dot stripped, because these constants are needed before HOST is
+   declared below. Both keys are PUBLISHABLE keys - public by design; RLS and
+   the grants do the protecting, in both projects. */
+const SPWN_DB = location.hostname.replace(/\.$/, '').toLowerCase() === 'spwnapp.github.io';
+const URL_  = SPWN_DB ? 'https://hbjzrcbahfojjbinotvl.supabase.co'
+                      : 'https://ybwmdkemhsdtrbmmtver.supabase.co';
+const ANON  = SPWN_DB ? 'sb_publishable_5fQim-QWOF4lb6bpsgZUkg_dbYHZkGA'
+                      : 'sb_publishable_KG01c0kWK0wOUAMoUWigQA_sUuzVbiq';
 const BUILD = 19;
 
 /* ── which books are open ──
@@ -5348,7 +5360,10 @@ $('#dLinkBtn').onclick = async () => {
    The Worker holds the shop's Google sign-in; the app sends only its own
    signed-in session and asks for Drive work. Nothing Google-secret is in
    this file. See worker/spawn-drive.js. */
-const DRIVE_API = 'https://spawn-drive.spawnsolutions26.workers.dev';
+/* Spawn Notebook's own Worker serves only /signup and /setup (SIGNUP_ONLY):
+   a notebook shop has no Drive, so nothing else is ever asked of it. */
+const DRIVE_API = SPWN_DB ? 'https://spawn-signup.spawnsolutions26.workers.dev'
+                          : 'https://spawn-drive.spawnsolutions26.workers.dev';
 /* ?setup=CODE - opened from a device-setup QR or link. Read once and taken
    off the address, so a reload or a bookmark never carries a code around. */
 const SETUP_CODE = (() => {
