@@ -290,6 +290,17 @@
      switch it back on, and a row you cannot read is not a control. */
   .gvrow.off .gvname{opacity:.55;text-decoration:line-through}
   @media (max-width:430px){ .gvrow{flex-wrap:wrap} .gvrow .gvname{flex:1 1 100%} }
+  /* Settings -> Your prices (notebook, build20h). Each row is one button.
+     The name is free text in a flex row, so it gets a BASIS (hard rule 9):
+     it wraps onto its own lines instead of being squeezed to one letter. */
+  .prrow{display:flex;gap:10px;align-items:center;width:100%;padding:10px 2px;border:0;
+         border-top:1px solid var(--line);background:none;color:inherit;font:inherit;
+         text-align:left;cursor:pointer}
+  .prrow:first-child{border-top:0}
+  .prrow .nm{flex:1 1 10rem;min-width:0;overflow-wrap:anywhere;font-weight:700}
+  .prrow .nm small{display:block;font-weight:500;color:var(--text-2)}
+  .prrow .pr{flex:none;font-weight:800;white-space:nowrap}
+  .prrow .pr.open{font-weight:600;color:var(--text-2)}
   .addline{width:100%;margin-top:8px}
   .jo.gov{border-left-color:#3D4E8C}
   /* After .gov on purpose: a late government order shows red. Urgency
@@ -2144,6 +2155,15 @@ try{
       <button class="btn" id="brSave" style="width:100%;margin-top:12px">Save</button>
       <div class="msg" id="brMsg"></div>
     </div>
+    <!-- NOTEBOOK EDITION (build20h): the shop's own price list. Owner or
+         office - the database checks the bench and the PIN itself, in
+         item_set_price; this card is only where the button lives. -->
+    <div class="card" id="prCard" style="margin-top:12px" hidden>
+      <h2>Your prices</h2>
+      <p class="small muted">Tap a product to set its price. New orders fill it in by themselves;
+        orders already saved keep the price they were sold at.</p>
+      <div id="prList"></div>
+    </div>
     <!-- the shop's Google Drive, through the spawn-drive Worker -->
     <div class="card" id="drvCard">
       <h2>Google Drive</h2>
@@ -2708,6 +2728,21 @@ try{
   <div class="df">
     <button class="btn ghost" id="npNo">Cancel</button>
     <button class="btn" id="npSave">Add product</button>
+  </div>
+</dialog>
+
+<!-- Price one product (build20h). item_set_price is the only door. -->
+<dialog id="priceDlg">
+  <div class="dh"><span class="no" id="pdHead">Price</span></div>
+  <div class="db">
+    <label><span id="pdLabel">Price</span><input id="pdPrice" inputmode="decimal" autocomplete="off" placeholder="Leave blank to quote each order"></label>
+    <p class="small muted" id="pdHint"></p>
+    <label id="pdPinWrap">Your PIN<input id="pdPin" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></label>
+    <div class="msg" id="pdMsg"></div>
+  </div>
+  <div class="df">
+    <button class="btn ghost" id="pdNo">Cancel</button>
+    <button class="btn" id="pdSave">Save price</button>
   </div>
 </dialog>
 
@@ -3877,6 +3912,7 @@ function staffGuard(r, next){
 
 function renderStaff(){
   renderShopCodeCard();
+  renderPriceCard();
   const box = $('#stList');
   if(!box) return;
   const rc = $('#relCard');
@@ -8214,6 +8250,86 @@ $('#npSave').onclick = async () => {
   toast(nm + ' is on the list now');
 };
 
+/* YOUR PRICES (notebook, build20h). A self-set-up shop starts with every
+   product quoted per order; this is where the owner or the office gives one
+   a price. item_set_price checks the bench and the PIN in the database: a
+   jsonb answer is saved, null is a wrong PIN with one try burned, a raise is
+   everything else. A saved order never changes - jo_items keeps the price it
+   was sold at - so the toast says "from the next order". */
+const mayPrice = () => NB() && (STAFF ? (BENCH === 'owner' || BENCH === 'office') : ROLE === 'owner');
+const priceText = i => i.price_open
+  ? 'Quoted each order'
+  : peso(i.default_price) + (i.unit && i.unit !== 'pc' ? ' per ' + i.unit : '');
+let PR_ITEM = null;
+function renderPriceCard(){
+  const card = $('#prCard'); if(!card) return;
+  card.hidden = !mayPrice();
+  if(card.hidden) return;
+  const list = $('#prList'); list.innerHTML = '';
+  /* A placeholder ("Other item") is a hole to write in, not a product - it
+     is named on each order and never has a price of its own. */
+  const items = ITEMS.filter(i => !i.ask_name);
+  if(!items.length){ list.innerHTML = '<p class="small muted">No products yet.</p>'; return; }
+  items.forEach(i => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'prrow'; b.dataset.item = i.id;
+    b.innerHTML = '<span class="nm">' + esc(i.name) +
+      (i.unit && i.unit !== 'pc' ? '<small>sold by the ' + esc(i.unit) + '</small>' : '') + '</span>' +
+      '<span class="pr' + (i.price_open ? ' open' : '') + '">' + esc(priceText(i)) + '</span>';
+    b.onclick = () => openPrice(i);
+    list.appendChild(b);
+  });
+}
+const priceDlg = $('#priceDlg');
+function openPrice(i){
+  PR_ITEM = i;
+  $('#pdHead').textContent = i.name;
+  $('#pdLabel').textContent = i.unit && i.unit !== 'pc' ? 'Price per ' + i.unit : 'Price';
+  $('#pdPrice').value = i.price_open ? '' : String(Number(i.default_price));
+  $('#pdHint').textContent = 'Now: ' + priceText(i) + '. Leave the box blank to quote it on each order.' +
+    (Number(i.size_add) > 0 ? ' Bigger sizes still add ' + peso(i.size_add) + ' a step.' : '');
+  $('#pdPin').value = '';
+  $('#pdPinWrap').hidden = !STAFF;
+  $('#pdMsg').className = 'msg'; $('#pdMsg').textContent = '';
+  $('#pdSave').disabled = false;
+  priceDlg.showModal();
+  $('#pdPrice').focus();
+}
+$('#pdNo').onclick = () => priceDlg.close();
+$('#pdSave').onclick = async () => {
+  const i = PR_ITEM; if(!i) return;
+  const msg = $('#pdMsg');
+  const bad = t => { msg.className = 'msg err'; msg.textContent = t; };
+  const raw = $('#pdPrice').value.trim().replace(/[₱,\s]/g, '');
+  const pr  = raw === '' ? 0 : Number(raw);
+  if(raw !== '' && !/^[0-9]+(\.[0-9]{1,2})?$/.test(raw)) return bad('Type the price as a number, like 45 or 45.50.');
+  if(!Number.isFinite(pr) || pr < 0) return bad('Type the price as a number, like 45 or 45.50.');
+  if(pr > 1000000) return bad('That price is too big - check the number.');
+  const pin = STAFF ? $('#pdPin').value.trim() : '';
+  if(STAFF && !/^[0-9]{4}$/.test(pin)) return bad('Your PIN is four digits.');
+  try{ assertWritable(); }catch(err){ return bad(err.message); }
+  $('#pdSave').disabled = true; msg.className = 'msg'; msg.textContent = 'Saving…';
+  let res;
+  try{
+    const { data, error } = await sb.rpc('item_set_price', {
+      p_item: i.id, p_price: pr > 0 ? pr : null,
+      p_staff: STAFF ? STAFF.id : null, p_pin: STAFF ? pin : null });
+    if(error) throw error;
+    res = data;
+  }catch(e){ $('#pdSave').disabled = false; return bad(e.message || 'That did not save.'); }
+  if(res === null || res === undefined){
+    $('#pdSave').disabled = false; $('#pdPin').value = '';
+    return bad('That is not your PIN.');
+  }
+  await loadItems();                       // the database's answer, not ours
+  renderPriceCard();
+  if(!$('#vNew').hidden) renderLines();    // an order being typed picks it up
+  priceDlg.close();
+  const now = ITEMS.find(x => x.id === i.id) || { ...i, ...res };
+  toast(now.price_open ? i.name + ' is quoted on each order'
+                       : i.name + ': ' + priceText(now) + ' from the next order');
+};
+
 async function openOwed(id){
   const known = ORDERS.find(o => o.id === id);
   if(known) return openDetail(known);
@@ -10691,7 +10807,7 @@ function showTab(id, quiet, noHist){
   if(NB()) $('#hShop').textContent = id === 'nvHome' ? SHOP.name : (NB_TITLES[id] || '');
   /* "Your shop's look": fresh each time Settings opens, and a colour that was
      only previewed goes back to the saved one when Settings is left. */
-  if(NB() && id === 'nvStaff' && now !== 'nvStaff') paintBrandCard();
+  if(NB() && id === 'nvStaff' && now !== 'nvStaff'){ paintBrandCard(); renderPriceCard(); }
   if(NB() && now === 'nvStaff' && id !== 'nvStaff'){ applyBrand(SHOP.brand_color); BR_LOGO = undefined; }
   markTab(id);
   if(!quiet && id!=='nvNew') refresh();
