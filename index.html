@@ -1542,6 +1542,9 @@
   .t-cust{background:#6D28D9}
   .t-sales{background:#141414}
   .t-set{background:#334155}
+  .t-prod{background:#0E7490}
+  #vProd{padding-top:4px}
+  .prnew{width:100%;min-height:50px;border-radius:14px;margin:0 0 12px}
   .t-lock{background:#57534E}
   @media (min-width:700px){
     .tiles{grid-template-columns:repeat(4,1fr)}
@@ -1910,6 +1913,8 @@ try{
     <button id="nvBoard" role="tab" aria-selected="false">Board</button>
     <button id="nvCust"  role="tab" aria-selected="false" hidden>Customers</button>
     <button id="nvStaff" role="tab" aria-selected="false" hidden>Staff</button>
+    <!-- notebook only, reached from the Products tile; never drawn in the strip -->
+    <button id="nvProd"  role="tab" aria-selected="false" hidden>Products</button>
   </div>
 </nav>
 
@@ -1946,6 +1951,11 @@ try{
         <button type="button" class="ntile wide t-sales" data-go="sales" id="hmSalesTile">
           <span class="tl">Sales</span>
           <span class="tn" id="hmSales">Cash today ₱0</span>
+        </button>
+        <!-- 7 Oct: "add tiles products" - the shop's own product list and prices -->
+        <button type="button" class="ntile t-prod" data-go="prod" id="hmProdTile" hidden>
+          <span class="tl">Products</span>
+          <span class="tn" id="hmProd">Products and prices</span>
         </button>
         <button type="button" class="ntile t-set" data-go="staff" id="hmStaffTile">
           <span class="tl">Settings</span>
@@ -2182,6 +2192,21 @@ try{
   </section>
 
   <!-- customers: every repeat customer and what they owe (27 Sep) -->
+  <!-- PRODUCTS (notebook, 7 Oct): its own screen from the home tile. The list
+       is the price list that lived in Settings (build20h, item_set_price);
+       + Add a product is the order form's door (item_add). -->
+  <section class="view" id="vProd" hidden>
+    <button type="button" class="btn prnew" id="prAdd">+ Add a product</button>
+    <!-- NOTEBOOK EDITION (build20h): the shop's own price list. Owner or
+         office - the database checks the bench and the PIN itself, in
+         item_set_price; this card is only where the button lives. -->
+    <div class="card" id="prCard" hidden>
+      <h2>Your products</h2>
+      <p class="small muted">Tap a product to set its price. New orders fill it in by themselves;
+        orders already saved keep the price they were sold at.</p>
+      <div id="prList"></div>
+    </div>
+  </section>
   <section class="view" id="vCust" hidden>
     <div class="bsearch">
       <input id="cSearch" type="search" autocomplete="off" enterkeyhint="search"
@@ -2288,15 +2313,6 @@ try{
       </div>
       <button class="btn" id="brSave" style="width:100%;margin-top:12px">Save</button>
       <div class="msg" id="brMsg"></div>
-    </div>
-    <!-- NOTEBOOK EDITION (build20h): the shop's own price list. Owner or
-         office - the database checks the bench and the PIN itself, in
-         item_set_price; this card is only where the button lives. -->
-    <div class="card" id="prCard" style="margin-top:12px" hidden>
-      <h2>Your prices</h2>
-      <p class="small muted">Tap a product to set its price. New orders fill it in by themselves;
-        orders already saved keep the price they were sold at.</p>
-      <div id="prList"></div>
     </div>
     <!-- the shop's Google Drive, through the spawn-drive Worker -->
     <div class="card" id="drvCard">
@@ -3284,7 +3300,7 @@ const canSeeTakings = () => canSeeMoney() || BENCH === 'counter';
    the promise made when this was built ("this should not affect decalfix"). */
 const NB = () => !!SHOP && SHOP.edition === 'notebook';
 const NB_BENCHES = ['counter','office','owner'];
-const NB_TITLES = { nvNew:'New order', nvBoard:'Orders', nvCust:'Customers',
+const NB_TITLES = { nvNew:'New order', nvBoard:'Orders', nvCust:'Customers', nvProd:'Products',
                     nvSales:'Sales', nvStaff:'Settings' };
 function applyEdition(){
   FLOW = NB() ? NB_FLOW : FULL_FLOW;
@@ -8014,6 +8030,12 @@ function renderHome(){
     $('#hmSales').textContent = 'Cash today ' + peso(cash);
   }else $('#hmSales').textContent = '';
   $('#hmStaffTile').hidden = ROLE !== 'owner';
+  $('#hmProdTile').hidden = !mayPrice();
+  if(mayPrice()){
+    const items = ITEMS.filter(i => !i.ask_name), open = items.filter(i => i.price_open).length;
+    $('#hmProd').textContent = !items.length ? 'Add your products'
+      : open ? n(open, 'needs a price', 'need a price') : n(items.length, 'product', 'products');
+  }
   $('#hmLockTile').hidden = !onRoster().length;
   $('#hmTiles').querySelector('[data-go="new"]').hidden = !canTakeOrders();
 }
@@ -8028,6 +8050,7 @@ $('#hmTiles').addEventListener('click', e => {
   else if(go === 'cust')   $('#nvCust').click();
   else if(go === 'sales')  $('#nvSales').click();
   else if(go === 'staff')  $('#nvStaff').click();
+  else if(go === 'prod')   $('#nvProd').click();
   else if(go === 'lock')   showPicker();
 });
 $('#hHome').onclick = () => { LENS = null; showTab('nvHome'); };
@@ -8487,6 +8510,7 @@ $('#addProd').onclick = () => {
   $('#npName').focus();
 };
 $('#npNo').onclick = () => prodDlg.close();
+$('#prAdd').onclick = () => $('#addProd').click();
 $('#npSave').onclick = async () => {
   const msg = $('#npMsg');
   const bad = t => { msg.className = 'msg err'; msg.textContent = t; };
@@ -8513,6 +8537,7 @@ $('#npSave').onclick = async () => {
   if(id === null || id === undefined){ $('#npSave').disabled = false; return bad('That is not your PIN.'); }
   await loadItems();
   renderLines();                                  // in the picker on this order already
+  if(!$('#vProd').hidden) renderPriceCard();      // and on the Products screen
   prodDlg.close();
   toast(nm + ' is on the list now');
 };
@@ -11048,7 +11073,7 @@ addEventListener('popstate', () => {
 });
 
 /* ── tabs ── */
-const views = { nvHome:'vHome', nvDash:'vDash', nvNew:'vNew', nvBoard:'vBoard', nvCust:'vCust', nvSales:'vSales', nvStaff:'vStaff' };
+const views = { nvHome:'vHome', nvDash:'vDash', nvNew:'vNew', nvBoard:'vBoard', nvCust:'vCust', nvSales:'vSales', nvStaff:'vStaff', nvProd:'vProd' };
 /* `quiet` puts the tab up WITHOUT fetching. Used for the opening placement,
    where openShop is about to fetch everything anyway - two refreshes racing
    is how a board flickers. */
@@ -11074,7 +11099,8 @@ function showTab(id, quiet, noHist){
   if(NB()) $('#hShop').textContent = id === 'nvHome' ? SHOP.name : (NB_TITLES[id] || '');
   /* "Your shop's look": fresh each time Settings opens, and a colour that was
      only previewed goes back to the saved one when Settings is left. */
-  if(NB() && id === 'nvStaff' && now !== 'nvStaff'){ paintBrandCard(); renderPriceCard(); }
+  if(NB() && id === 'nvStaff' && now !== 'nvStaff') paintBrandCard();
+  if(NB() && id === 'nvProd' && now !== 'nvProd') renderPriceCard();
   if(NB() && now === 'nvStaff' && id !== 'nvStaff'){ applyBrand(SHOP.brand_color); BR_LOGO = undefined; }
   markTab(id);
   if(!quiet && id!=='nvNew') refresh();
