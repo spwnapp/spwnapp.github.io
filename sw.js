@@ -2,7 +2,7 @@
    Network-first: always fresh when online, still opens when the line drops.
    API calls are never cached — stale job order data is worse than no data.
    Bump CACHE on every deploy. */
-const CACHE = 'spawn-132';
+const CACHE = 'spawn-133';
 /* '/' only, never '/index.html': Cloudflare answers that with a 308 to
    '/', and a worker that hands a redirected response to a page load
    fails - fine in testing, broken on a counter phone days later. */
