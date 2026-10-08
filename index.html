@@ -1585,6 +1585,69 @@
   html.spwn .card{border-radius:20px;border-color:transparent;
     box-shadow:0 1px 2px rgba(15,23,42,.05), 0 12px 32px -18px rgba(15,23,42,.28)}
   html.spwn dialog{border-radius:22px}
+  /* ── THE SOFT LOOK (8 Oct) - a light, floating, amber-accented interface
+     after the picture Wendell sent, modernised: soft grey ground, white cards
+     on two-sided shadows, amber for the one thing to do next, a frosted bar.
+     --acc1/--acc2 are amber until the shop has a colour of its own (body.brand),
+     then that colour; --acc-on is the ink that reads on the accent. */
+  html.spwn{--acc1:#FFD25C;--acc2:#F5A300;--acc-ink:#A35F00;--acc-on:#2B1D00;
+    --soft:8px 8px 22px rgba(150,160,180,.30), -6px -6px 18px rgba(255,255,255,.95)}
+  body.nb.brand{--acc1:color-mix(in srgb, var(--nb-brand) 72%, #fff);--acc2:var(--nb-brand);--acc-ink:var(--nb-brand);--acc-on:#fff}
+  html.spwn body{background-color:#EEF0F4;
+    background-image:radial-gradient(42rem 26rem at 50% -12%, color-mix(in srgb, var(--acc1) 30%, transparent), transparent 70%),
+                     linear-gradient(180deg,#F6F7FA,#E8EBF0)}
+  html.spwn .card{background:#fff;box-shadow:var(--soft)}
+  html.spwn .btn:not(.ghost):not(.danger):not(.dark):not(:disabled){
+    background:linear-gradient(135deg,var(--acc1),var(--acc2));color:var(--acc-on);border-color:transparent;
+    box-shadow:0 10px 20px -12px var(--acc2)}
+  html.spwn .btn.ghost{background:#fff;box-shadow:var(--soft);border-color:transparent}
+  html.spwn #shopnew{--wz:var(--acc2);--wz-deep:var(--acc-ink)}
+  /* the header: light and frosted, the band and its wave gone */
+  body.nb header{background:rgba(246,247,250,.82)!important;color:#1E2230;
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 1px 0 rgba(15,23,42,.06)}
+  body.nb header::after{display:none}
+  body.nb .bellb svg{stroke:#1E2230}
+  body.nb .bellb .bn{box-shadow:0 0 0 2px #F6F7FA}
+  body.nb .hhome{color:#1E2230;border-color:rgba(15,23,42,.18);background:#fff}
+  body.nb header .who{color:#6B7280}
+  body.nb .hshop{color:#1E2230}
+  /* the tiles: white floating cards with an amber badge; New order is the accent */
+  body.nb .tiles .ntile{background:#fff;color:#1E2230;box-shadow:var(--soft)}
+  body.nb .tiles .ntile .tn{color:#6B7280;opacity:1}
+  body.nb .tiles .ntile .tic{background:linear-gradient(145deg,var(--acc1),var(--acc2));box-shadow:0 8px 16px -8px var(--acc2)}
+  body.nb .tiles .ntile .tic svg{stroke:#fff}
+  body.nb .tiles .t-new{background:linear-gradient(135deg,var(--acc1),var(--acc2));color:var(--acc-on)}
+  body.nb .tiles .t-new .tn{color:var(--acc-on);opacity:.8}
+  body.nb .tiles .t-new .tic{background:rgba(255,255,255,.38);box-shadow:none}
+  body.nb .tiles .t-new .tic svg{stroke:var(--acc-on)}
+  /* Past due is the one alarm: red only while something is late */
+  body.nb .tiles .t-late:not(.calm){background:linear-gradient(135deg,#FB7185,#E11D48);color:#fff}
+  body.nb .tiles .t-late:not(.calm) .tn{color:#fff;opacity:.9}
+  body.nb .tiles .t-late:not(.calm) .tic{background:rgba(255,255,255,.25);box-shadow:none}
+  body.nb .ntile:focus-visible{outline:3px solid var(--acc2)}
+  /* the bottom bar */
+  .nbnav{display:none}
+  body.nb .nbnav{display:flex;position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:8;
+    max-width:560px;margin:0 auto;height:70px;padding:0 4px;align-items:center;
+    background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-radius:24px;
+    box-shadow:0 16px 34px -16px rgba(15,23,42,.38), 0 0 0 1px rgba(15,23,42,.05)}
+  body.nb .nbnav button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;
+    background:none;font:inherit;font-size:11px;font-weight:700;color:#8A90A2;padding:8px 0;cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  body.nb .nbnav button[hidden]{display:none}
+  body.nb .nbnav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  body.nb .nbnav button[aria-current="true"]{color:var(--acc-ink)}
+  body.nb .nbnav .nbplus i{display:grid;place-items:center;width:56px;height:56px;margin-top:-30px;border-radius:50%;
+    background:linear-gradient(145deg,var(--acc1),var(--acc2));box-shadow:0 12px 22px -10px var(--acc2), 0 0 0 5px #F2F4F7}
+  body.nb .nbnav .nbplus svg{stroke:var(--acc-on);width:26px;height:26px;stroke-width:2.6}
+  body.nb .nbnav .nbplus span{margin-top:1px}
+  body.nb main{padding-bottom:110px}
+  body.nb #fab{display:none!important}
+  body.nb .calcfab{display:none!important}
+  .hcalc2{display:none}
+  body.nb .hcalc2{display:grid}
+  body.nb .hcalc2 svg{width:24px;height:24px;fill:none;stroke:#1E2230;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  html.spwn{background:#E8EBF0}
   /* the header: a smooth dark sheen instead of the honeycomb; its colour is
      still whatever applyBrand gives it, so a shop's own colour shows */
   html.spwn header{background-image:linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,0) 45%, rgba(0,0,0,.28))}
@@ -1910,6 +1973,8 @@ try{
     <img class="hlogo" id="hLogo" hidden alt="">
     <span class="hshop" id="hShop"></span>
     <span class="who"><span id="hWho"></span><span id="hClock"></span></span>
+    <!-- notebook only: the calculator lives up here, so nothing floats over the tiles -->
+    <button class="avbtn hcalc2" id="hCalc2" type="button" aria-label="Calculator"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8"/><path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h4"/></svg></button>
     <button class="avbtn bellb" id="hBell" type="button" aria-label="Notifications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="bn" id="hBellN" hidden></span></button>
     <button class="avbtn" id="hAcct" type="button" aria-label="Your account"><span class="avatar" id="hAv"></span></button>
     <button class="btn ghost" id="hLock" style="height:38px;padding:0 12px;font-size:11px">Lock</button>
@@ -2489,6 +2554,17 @@ try{
     </div>
   </section>
 </main>
+<!-- SPAWN NOTEBOOK'S BOTTOM BAR (8 Oct, after the shopping-app picture Wendell
+     sent: "use this design but make it modernize"). Drawn only for a
+     notebook shop (body.nb); Decal Fix never shows it. -->
+<div class="nbnav" id="nbNav" role="navigation" aria-label="Notebook">
+  <button type="button" data-nb="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg><span>Home</span></button>
+  <button type="button" data-nb="orders"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg><span>Orders</span></button>
+  <button type="button" data-nb="new" class="nbplus" aria-label="New order"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></i><span>New</span></button>
+  <button type="button" data-nb="cust"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Customers</span></button>
+  <button type="button" data-nb="prod"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.42l8.7 8.7a2.43 2.43 0 0 0 3.42 0l6.58-6.58a2.43 2.43 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg><span>Products</span></button>
+  <button type="button" data-nb="lock" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Lock</span></button>
+</div>
 
 <div class="appfoot"><i class="bullet"></i><span>Powered by <strong>Spawn Solutions</strong></span></div>
 <button class="btn fab" id="fab" hidden>+ New</button>
@@ -8107,6 +8183,26 @@ $('#hmTiles').addEventListener('click', e => {
   else if(go === 'lock')   showPicker();
 });
 $('#hHome').onclick = () => { LENS = null; showTab('nvHome'); };
+/* the notebook's bottom bar: the same doors as the tiles, always in reach */
+function paintNbNav(id){
+  const bar = $('#nbNav'); if(!bar) return;
+  const show = (k, on) => { bar.querySelector('[data-nb="' + k + '"]').hidden = !on; };
+  show('new', canTakeOrders()); show('cust', canTakeOrders());
+  show('prod', mayPrice()); show('lock', !mayPrice() && onRoster().length > 0);
+  const cur = { nvHome:'home', nvBoard:'orders', nvNew:'new', nvCust:'cust', nvProd:'prod' }[id] || '';
+  bar.querySelectorAll('button').forEach(b => b.setAttribute('aria-current', String(b.dataset.nb === cur)));
+}
+$('#hCalc2').onclick = () => $('#hCalc').click();
+$('#nbNav').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  const k = b.dataset.nb;
+  if(k === 'home'){ LENS = null; showTab('nvHome'); }
+  else if(k === 'orders'){ BOARD_TAB = 'all'; $('#nvBoard').click(); }
+  else if(k === 'new')  $('#nvNew').click();
+  else if(k === 'cust') $('#nvCust').click();
+  else if(k === 'prod') $('#nvProd').click();
+  else if(k === 'lock') showPicker();
+});
 
 function isLate(o){
   return o.target_date && o.target_date < today() && !['claimed','cancelled'].includes(o.status) && !o.voided;
@@ -11156,6 +11252,7 @@ function showTab(id, quiet, noHist){
   if(NB() && id === 'nvProd' && now !== 'nvProd') renderPriceCard();
   if(NB() && now === 'nvStaff' && id !== 'nvStaff'){ applyBrand(SHOP.brand_color); BR_LOGO = undefined; }
   markTab(id);
+  if(NB()) paintNbNav(id);
   if(!quiet && id!=='nvNew') refresh();
   /* The form's two lists are as old as the tap-in otherwise - see loadArtists. */
   if(id === 'nvNew' && now !== 'nvNew' && SHOP && !NB()){ loadArtists().catch(() => {}); loadGovs().catch(() => {}); }
