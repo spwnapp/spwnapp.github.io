@@ -1628,6 +1628,57 @@
     background-image:radial-gradient(42rem 26rem at 50% -12%, color-mix(in srgb, var(--acc1) 30%, transparent), transparent 70%),
                      linear-gradient(180deg,#F6F7FA,#E8EBF0)}
   html.spwn .card{background:#fff;box-shadow:var(--soft)}
+  /* ── THE SHOP'S BACKGROUND (8 Oct, spawn-135; Wendell: "make it not plain
+     colors ... make it choose"). `shops.bg` names one; the owner picks it in
+     Settings -> Your shop's look. Every one is LIGHT, so the dark text and the
+     white cards read on all of them. None is a photo: they are drawn, so they
+     cost nothing to load and are sharp on every screen. No choice = Glow. ── */
+  html.spwn[data-bg="sunrise"] body{background-color:#FFF3EA;background-image:
+      radial-gradient(40rem 30rem at 0% 0%, rgba(251,146,60,.34), transparent 70%),
+      radial-gradient(36rem 28rem at 100% 10%, rgba(244,114,182,.26), transparent 70%),
+      radial-gradient(40rem 30rem at 60% 110%, rgba(250,204,21,.28), transparent 70%)}
+  html.spwn[data-bg="ocean"] body{background-color:#EAF6FB;background-image:
+      radial-gradient(42rem 30rem at 10% -10%, rgba(56,189,248,.36), transparent 70%),
+      radial-gradient(36rem 30rem at 100% 60%, rgba(45,212,191,.28), transparent 70%),
+      linear-gradient(180deg,#F0F9FF,#E0F2F1)}
+  html.spwn[data-bg="garden"] body{background-color:#EEF8EE;background-image:
+      radial-gradient(40rem 30rem at 90% -10%, rgba(74,222,128,.32), transparent 70%),
+      radial-gradient(36rem 30rem at 0% 100%, rgba(163,230,53,.26), transparent 70%),
+      linear-gradient(180deg,#F4FBF3,#E6F4E8)}
+  html.spwn[data-bg="lavender"] body{background-color:#F4F0FD;background-image:
+      radial-gradient(40rem 30rem at 0% 0%, rgba(167,139,250,.34), transparent 70%),
+      radial-gradient(36rem 30rem at 100% 100%, rgba(244,114,182,.24), transparent 70%),
+      linear-gradient(180deg,#F8F5FF,#EEE9FB)}
+  /* CMYK: a print shop's own colours, cyan, magenta and yellow, as soft ink
+     and a faint halftone */
+  html.spwn[data-bg="cmyk"] body{background-color:#FBFAF7;background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Ccircle cx='5' cy='5' r='1.6' fill='%2306B6D4' fill-opacity='.22'/%3E%3Ccircle cx='16' cy='9' r='1.6' fill='%23EC4899' fill-opacity='.2'/%3E%3Ccircle cx='9' cy='17' r='1.6' fill='%23EAB308' fill-opacity='.26'/%3E%3C/svg%3E"),
+      radial-gradient(34rem 26rem at 0% 0%, rgba(6,182,212,.24), transparent 70%),
+      radial-gradient(32rem 26rem at 100% 20%, rgba(236,72,153,.2), transparent 70%),
+      radial-gradient(36rem 28rem at 50% 110%, rgba(234,179,8,.26), transparent 70%)}
+  html.spwn[data-bg="dots"] body{background-color:#F3F4F7;background-image:
+      radial-gradient(color-mix(in srgb, var(--acc2) 26%, transparent) 1.6px, transparent 1.8px),
+      radial-gradient(42rem 26rem at 50% -12%, color-mix(in srgb, var(--acc1) 26%, transparent), transparent 70%);
+    background-size:20px 20px, auto}
+  html.spwn[data-bg="honey"] body{background-color:#F3F4F7;background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 1 54 16v32L28 63 2 48V16zM28 64v33M0 97l2-1M56 97l-2-1' fill='none' stroke='%231E2230' stroke-opacity='.07' stroke-width='1.5'/%3E%3C/svg%3E"),
+      radial-gradient(42rem 28rem at 50% -12%, color-mix(in srgb, var(--acc1) 30%, transparent), transparent 70%)}
+  html.spwn[data-bg="waves"] body{background-color:#EEF0F4;background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1440' height='320' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath d='M0 160c240 60 480 60 720 0s480-60 720 0v160H0z' fill='%23FFFFFF' fill-opacity='.55'/%3E%3Cpath d='M0 220c200 40 420 50 720 0s520-40 720 10v90H0z' fill='%23FFFFFF' fill-opacity='.7'/%3E%3C/svg%3E"),
+      linear-gradient(170deg, color-mix(in srgb, var(--acc1) 34%, #F6F7FA), #EEF0F4 60%);
+    background-size:100% 46vh, auto;background-position:bottom, 0 0;background-repeat:no-repeat}
+  /* the chooser: a small window onto each background */
+  .bgpick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px}
+  .bgpick button{display:grid;gap:6px;padding:0;border:0;background:none;font:inherit;font-size:12.5px;font-weight:700;
+    color:#1E2230;cursor:pointer;text-align:center}
+  .bgpick .bgsw{display:block;position:relative;height:72px;border-radius:14px;overflow:hidden;
+    outline:3px solid transparent;outline-offset:2px}
+  .bgpick .bgsw::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(30,34,48,.08)}
+  /* a whole phone screen of the background, shrunk to a quarter */
+  .bgpick .bgsw i{position:absolute;left:0;top:0;width:400%;height:400%;transform:scale(.25);transform-origin:0 0}
+  .bgpick button[aria-pressed="true"] .bgsw{outline-color:var(--acc2)}
+  .bgpick button[aria-pressed="true"]{color:var(--acc-ink)}
+  .bgpick button:focus-visible .bgsw{outline-color:#1E2230}
   html.spwn .btn:not(.ghost):not(.danger):not(.dark):not(:disabled){
     background:linear-gradient(135deg,var(--acc1),var(--acc2));color:var(--acc-on);border-color:transparent;
     box-shadow:0 10px 20px -12px var(--acc2)}
@@ -1886,6 +1937,7 @@ try{
     if(nbO){ nbO.textContent = nbB.name || ''; nbO.className = 'osname nbname'; }
     if(nbS) nbS.style.backgroundImage = 'none';     // Decal Fix's red hexagons are Decal Fix's
     if(nbB.color && /^#[0-9a-f]{6}$/i.test(nbB.color)) nbS.style.setProperty('--sp-c', nbB.color);
+    if(nbB.bg && /^[a-z]{2,12}$/.test(nbB.bg)) document.documentElement.setAttribute('data-bg', nbB.bg);
   }else if(document.documentElement.classList.contains('spwn')){
     /* Spawn's address, a phone that has not opened its shop yet: no
        Decal Fix mark, just the app's name. */
@@ -2570,6 +2622,8 @@ try{
       </div>
       <p class="small muted" id="brSwHint" hidden>Your colours, taken from your logo:</p>
       <div class="swatches" id="brSw" role="group" aria-label="The app's colour"></div>
+      <p class="small muted" style="margin:14px 0 0">Background - tap one to see it on the whole app:</p>
+      <div class="bgpick" id="brBg" role="group" aria-label="The app's background"></div>
       <div class="grid2" style="margin-top:12px">
         <label class="wide">Address - printed on the claim stub<input id="brAddr" maxlength="160" autocomplete="off" placeholder="e.g. Rizal Ave, Dipolog City"></label>
         <label class="wide">Phone<input id="brPhone" maxlength="60" autocomplete="off" inputmode="tel" placeholder="09xx"></label>
@@ -3664,6 +3718,20 @@ function applyBrand(hex){
   st.setProperty('--nb-brand-wash', s.wash);
   if(meta) meta.content = s.deep;           // the phone's own status bar
 }
+/* The shop's background (spawn-135). An id from BGS, or null for Glow. Drawn
+   by CSS (html[data-bg]), Spawn OS only. */
+const BGS = [
+  { id: null,       name: 'Glow' },     { id: 'sunrise', name: 'Sunrise' }, { id: 'ocean',  name: 'Ocean' },
+  { id: 'garden',   name: 'Garden' },   { id: 'lavender', name: 'Lavender' }, { id: 'cmyk', name: 'CMYK' },
+  { id: 'dots',     name: 'Dots' },     { id: 'honey',   name: 'Honeycomb' }, { id: 'waves', name: 'Waves' }
+];
+const BG_RE = /^[a-z]{2,12}$/;
+let SHOP_BG = null;
+function applyBg(id){
+  const ok = NB() && id && BG_RE.test(id) && BGS.some(b => b.id === id);
+  if(ok) document.documentElement.setAttribute('data-bg', id);
+  else document.documentElement.removeAttribute('data-bg');
+}
 function paintLogo(){
   const ok = NB() && LOGO_RE.test(LOGO);
   ['#hLogo', '#lLogo'].forEach(k => {
@@ -3677,9 +3745,19 @@ function paintLogo(){
    boot already read. The cache is also what the splash reads on the next
    cold open, before there is a session to ask. */
 async function loadBrand(){
-  if(!NB()){ brandWrite(null); LOGO = ''; applyBrand(null); paintLogo(); return; }
+  if(!NB()){ brandWrite(null); LOGO = ''; applyBrand(null); applyBg(null); paintLogo(); return; }
   applyBrand(SHOP.brand_color);
   const c = brandRead();
+  /* the background is read HERE, not in boot: boot's select is shared with
+     Decal Fix, whose database has no `bg` column, and naming it there would
+     stop Decal Fix opening. Shown at once from this phone's copy, then
+     corrected from the database. A failed read keeps what the phone had. */
+  SHOP_BG = c && c.shop === SHOP.id ? (c.bg || null) : null;
+  applyBg(SHOP_BG);
+  try{
+    const { data, error } = await sb.from('shops').select('bg').eq('id', SHOP.id).limit(1);
+    if(!error && data && data[0]){ SHOP_BG = BG_RE.test(data[0].bg || '') ? data[0].bg : null; applyBg(SHOP_BG); }
+  }catch(e){}
   const same = c && c.shop === SHOP.id && (c.logo_at || null) === (SHOP.logo_at || null);
   LOGO = same ? (c.logo || '') : '';
   paintLogo();
@@ -3697,7 +3775,7 @@ async function loadBrand(){
   const mine = c && c.shop === SHOP.id ? c : null;
   brandWrite({ shop: SHOP.id, edition: 'notebook', name: SHOP.name, color: SHOP.brand_color || null,
                logo_at: got ? (SHOP.logo_at || null) : (mine && mine.logo_at) || null,
-               logo: got ? LOGO : (mine && mine.logo) || '' });
+               logo: got ? LOGO : (mine && mine.logo) || '', bg: SHOP_BG });
 }
 
 /* A picked logo, made small enough to keep in the shop's row: at most 256 px
@@ -3762,16 +3840,46 @@ function logoColours(img){
 /* Settings -> "Your shop's look". Nothing is kept until Save: tapping a
    colour previews it on the whole app, and leaving Settings unsaved puts the
    saved look back (showTab). `undefined` logo = unchanged, '' = remove. */
-let BR_PICK = null, BR_LOGO = undefined, BR_COLS = [];
+let BR_PICK = null, BR_LOGO = undefined, BR_COLS = [], BR_BG = null;
 function paintBrandCard(){
   const card = $('#brandCard'); if(!card) return;
   card.hidden = !(NB() && ROLE === 'owner');
   if(card.hidden) return;
-  BR_PICK = SHOP.brand_color || null; BR_LOGO = undefined;
+  BR_PICK = SHOP.brand_color || null; BR_LOGO = undefined; BR_BG = SHOP_BG;
   BR_COLS = SHOP.brand_color ? [SHOP.brand_color] : [];
   $('#brAddr').value = SHOP.address || ''; $('#brPhone').value = SHOP.contact || '';
   $('#brMsg').className = 'msg'; $('#brMsg').textContent = '';
-  paintBrPreview(); paintSwatches();
+  paintBrPreview(); paintSwatches(); paintBgPick();
+}
+/* each choice is a small window onto that background - the same CSS, so
+   what is tapped is what the app becomes */
+function paintBgPick(){
+  const box = $('#brBg'); if(!box) return;
+  box.innerHTML = '';
+  const html = document.documentElement, was = html.getAttribute('data-bg');
+  BGS.forEach(o => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.dataset.bg = o.id || 'glow';
+    b.setAttribute('aria-pressed', String((o.id || null) === (BR_BG || null)));
+    const sw = document.createElement('span'); sw.className = 'bgsw';
+    const pic = document.createElement('i');
+    /* borrow the background's own look: set it on the page for a moment and
+       copy what the browser computed, onto a box four times the swatch's
+       size shown at a quarter - so a glow meant for a whole screen reads as
+       one, instead of as the corner of one */
+    if(o.id) html.setAttribute('data-bg', o.id); else html.removeAttribute('data-bg');
+    const cs = getComputedStyle(document.body);
+    ['backgroundColor', 'backgroundImage', 'backgroundSize', 'backgroundPosition', 'backgroundRepeat']
+      .forEach(k => { pic.style[k] = cs[k]; });
+    sw.appendChild(pic);
+    b.append(sw, document.createTextNode(o.name));
+    b.onclick = () => {
+      BR_BG = o.id; applyBg(o.id); paintBgPick();
+      $('#brMsg').className = 'msg'; $('#brMsg').textContent = 'This is a preview. Press Save to keep it.';
+    };
+    box.appendChild(b);
+  });
+  if(was) html.setAttribute('data-bg', was); else html.removeAttribute('data-bg');
 }
 function paintBrPreview(){
   const src = BR_LOGO === undefined ? LOGO : BR_LOGO;
@@ -3848,8 +3956,18 @@ $('#brSave').onclick = async () => {
   applyBrand(SHOP.brand_color); paintLogo();
   brandWrite({ shop: SHOP.id, edition: 'notebook', name: SHOP.name, color: SHOP.brand_color || null,
                logo_at: SHOP.logo_at || null, logo: LOGO });
-  m.className = 'msg ok';
-  m.textContent = 'Saved. Every phone in the shop shows it the next time it opens the app.';
+  let bgNote = '';
+  if((BR_BG || null) !== (SHOP_BG || null)){
+    const r = await sb.from('shops').update({ bg: BR_BG || null }).eq('id', SHOP.id).select('bg');
+    if(r.error || !r.data || !r.data.length){
+      bgNote = ' The background was not saved yet - try again later.';
+      applyBg(SHOP_BG); BR_BG = SHOP_BG; paintBgPick();
+    }else SHOP_BG = BG_RE.test(r.data[0].bg || '') ? r.data[0].bg : null;
+  }
+  brandWrite({ shop: SHOP.id, edition: 'notebook', name: SHOP.name, color: SHOP.brand_color || null,
+               logo_at: SHOP.logo_at || null, logo: LOGO, bg: SHOP_BG });
+  m.className = bgNote ? 'msg err' : 'msg ok';
+  m.textContent = 'Saved.' + (bgNote || ' Every phone in the shop shows it the next time it opens the app.');
 };
 
 /* Anything a person typed - customer, contact, notes, item names, units and
@@ -11562,7 +11680,7 @@ function showTab(id, quiet, noHist){
      only previewed goes back to the saved one when Settings is left. */
   if(NB() && id === 'nvStaff' && now !== 'nvStaff') paintBrandCard();
   if(NB() && id === 'nvProd' && now !== 'nvProd') renderPriceCard();
-  if(NB() && now === 'nvStaff' && id !== 'nvStaff'){ applyBrand(SHOP.brand_color); BR_LOGO = undefined; }
+  if(NB() && now === 'nvStaff' && id !== 'nvStaff'){ applyBrand(SHOP.brand_color); applyBg(SHOP_BG); BR_LOGO = undefined; }
   markTab(id);
   if(NB()) paintNbNav(id);
   if(!quiet && id!=='nvNew') refresh();
