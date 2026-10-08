@@ -8417,9 +8417,11 @@ function renderHome(){
   $('#hmStaffTile').hidden = !nbOwner();
   /* "Hi, good morning" - by the shop's clock, to whoever is tapped in */
   const hr = Number(new Date().toLocaleString('en-US', { timeZone:'Asia/Manila', hour:'numeric', hour12:false })) % 24;
-  const greet = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
-  const first = STAFF && STAFF.name ? String(STAFF.name).trim().split(/\s+/)[0] : '';
-  $('#hmHi').textContent = 'Hi' + (first ? ' ' + first : '') + ', ' + greet.toLowerCase() + '!';
+  /* "Hi, Good Afternoon!" - capital G and A (Wendell, 8 Oct) */
+  const greet = hr < 12 ? 'Good Morning' : hr < 18 ? 'Good Afternoon' : 'Good Evening';
+  const nm = STAFF && STAFF.name ? String(STAFF.name).trim().split(/\s+/)[0] : '';
+  const first = nm ? nm.charAt(0).toUpperCase() + nm.slice(1) : '';   // every word starts with a capital
+  $('#hmHi').textContent = 'Hi' + (first ? ' ' + first : '') + ', ' + greet + '!';
   $('#hmProdTile').hidden = !mayPrice();
   if(mayPrice()){
     const items = ITEMS.filter(i => !i.ask_name), open = items.filter(i => i.price_open).length;
