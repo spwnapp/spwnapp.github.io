@@ -1497,6 +1497,13 @@
      screen never offers to start a shop. A ?shopcode= link still opens
      anywhere - a full-edition code opens the address it was made on. */
   html:not(.spwn) #aShopNew{display:none}
+  /* "Admin": small and quiet - it is Spawn's door, not the shop's */
+  .admlink{display:block;margin:18px auto 0;border:0;background:none;font:inherit;font-size:12px;font-weight:700;
+    letter-spacing:.06em;color:var(--grey);cursor:pointer;padding:6px 10px}
+  html:not(.spwn) #aAdmin{display:none}
+  .admcode{font-size:30px;font-weight:900;letter-spacing:.12em;text-align:center;padding:16px 8px;margin:8px 0;
+    border-radius:16px;background:var(--surface-2);font-variant-numeric:tabular-nums}
+  .admlinktext{overflow-wrap:anywhere;color:var(--text-2)}
   .hshop,.lshop{display:none}
   .hhome{flex:none;height:36px;padding:0 12px;border-radius:8px;border:1px solid rgba(255,255,255,.4);
          background:transparent;color:#fff;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
@@ -1835,6 +1842,9 @@ try{
     <p class="small muted" style="text-align:center;margin:6px 0 0">Got a code from the counter? Tap here.</p>
     <!-- notebook stage 3: a NEW shop, with a code from Spawn -->
     <button type="button" class="linky" id="aShopNew" style="margin-top:14px">New shop? Start with a code from Spawn</button>
+    <!-- 8 Oct: Spawn makes a new shop's code right here (Worker /admin/shop-code,
+         nb21a shop_code_issue, the admin PASSWORD). Spawn Notebook's address only. -->
+    <button type="button" class="admlink" id="aAdmin">Admin</button>
   </div>
 </section>
 
@@ -3022,6 +3032,29 @@ try{
   <div class="df">
     <button class="btn ghost" id="pdNo">Cancel</button>
     <button class="btn" id="pdSave">Save price</button>
+  </div>
+</dialog>
+
+<!-- Spawn admin: make a new shop's code from the sign-in screen (8 Oct) -->
+<dialog id="admDlg">
+  <div class="dh"><span class="no">Spawn admin</span></div>
+  <div class="db">
+    <div id="admForm">
+      <p class="small muted" style="margin-top:0">Make a code for a new shop. It works once, for 14 days.</p>
+      <label>Admin password<input id="admPass" type="password" autocomplete="off"></label>
+      <label>Who is it for? (optional)<input id="admNote" maxlength="80" autocomplete="off" placeholder="e.g. Juan's Print, Dipolog"></label>
+    </div>
+    <div id="admOut" hidden>
+      <p class="small muted" id="admFor" style="margin-top:0"></p>
+      <div class="admcode" id="admCode"></div>
+      <p class="small admlinktext" id="admLink"></p>
+    </div>
+    <div class="msg" id="admMsg"></div>
+  </div>
+  <div class="df">
+    <button class="btn ghost" id="admClose">Close</button>
+    <button class="btn" id="admGo">Make a code</button>
+    <button class="btn" id="admShare" hidden>Share the link</button>
   </div>
 </dialog>
 
@@ -7646,6 +7679,48 @@ async function createShop(){
   setTimeout(() => location.replace(location.origin + location.pathname), 700);
 }
 $('#aShopNew').onclick = () => showShopNew('');
+/* ── Spawn admin: a new shop's code from the sign-in screen (8 Oct) ──
+   The Worker hands the password to the database (nb21a shop_code_issue);
+   a wrong one costs one of five tries. The password box is emptied after
+   every attempt, right or wrong. */
+const admDlg = $('#admDlg');
+function admReset(){
+  $('#admForm').hidden = false; $('#admOut').hidden = true;
+  $('#admGo').hidden = false; $('#admGo').disabled = false; $('#admShare').hidden = true;
+  $('#admPass').value = ''; $('#admMsg').textContent = ''; $('#admMsg').className = 'msg';
+}
+$('#aAdmin').onclick = () => { admReset(); $('#admNote').value = ''; admDlg.showModal(); setTimeout(() => $('#admPass').focus(), 50); };
+$('#admClose').onclick = () => admDlg.close();
+$('#admPass').addEventListener('keydown', e => { if(e.key === 'Enter') $('#admGo').click(); });
+$('#admGo').onclick = async () => {
+  const msg = $('#admMsg');
+  const bad = t => { msg.className = 'msg err'; msg.textContent = t; };
+  const pass = $('#admPass').value;
+  if(!pass) return bad('Type the admin password.');
+  $('#admGo').disabled = true; msg.className = 'msg'; msg.textContent = 'Making the code…';
+  let r;
+  try{ r = await setupCall('/admin/shop-code', { password: pass, note: $('#admNote').value.trim() }); }
+  catch(e){ $('#admGo').disabled = false; $('#admPass').value = ''; return bad(signupWords(e)); }
+  $('#admPass').value = '';
+  const link = SHOP_HOME + '?shopcode=' + r.code;
+  $('#admForm').hidden = true; $('#admOut').hidden = false;
+  $('#admFor').textContent = (r.note ? 'For ' + r.note + ' · ' : '') + 'works once, until ' +
+    new Date(r.expires_at).toLocaleDateString('en-PH', { timeZone:'Asia/Manila', month:'long', day:'numeric' });
+  $('#admCode').textContent = niceShopCode(r.code);
+  $('#admLink').textContent = link;
+  $('#admShare').dataset.link = link; $('#admShare').dataset.code = niceShopCode(r.code);
+  $('#admGo').hidden = true; $('#admShare').hidden = false;
+  msg.className = 'msg ok'; msg.textContent = 'Send the link, or read out the code.';
+};
+$('#admShare').onclick = async () => {
+  const link = $('#admShare').dataset.link || '', code = $('#admShare').dataset.code || '';
+  if(navigator.share){
+    try{ await navigator.share({ title: 'Your Spawn Notebook code', text: 'Start your shop with this code: ' + code, url: link }); return; }
+    catch(e){ if(e && e.name === 'AbortError') return; }
+  }
+  try{ await navigator.clipboard.writeText(link); toast('Link copied.'); }
+  catch(e){ toast('Press and hold the link to copy it.'); }
+};
 $('#snBack').onclick = () => { $('#shopnew').hidden = true; $('#auth').hidden = false; };
 $('#snCheck').onclick = () => checkShopCode();
 $('#snCode').addEventListener('keydown', e => { if(e.key === 'Enter') checkShopCode(); });
