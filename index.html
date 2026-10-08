@@ -1497,6 +1497,18 @@
      screen never offers to start a shop. A ?shopcode= link still opens
      anywhere - a full-edition code opens the address it was made on. */
   html:not(.spwn) #aShopNew{display:none}
+  /* the avatar menu's two ways out - Spawn OS only */
+  .acquick{display:none}
+  html.spwn .acquick{display:grid;gap:8px;margin:16px 0 4px}
+  html.spwn .acquick .btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%}
+  html.spwn .acquick svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  html.spwn .acquick .danger-text{color:#BE123C}
+  /* the avatar: a round person icon in the accent colour, not a letter */
+  html.spwn body .avatar.avatar{clip-path:none;border-radius:50%;background:linear-gradient(135deg,var(--acc1),var(--acc2));
+    display:grid;place-items:center;box-shadow:0 6px 14px -8px var(--acc2)}
+  html.spwn .avatar svg{width:62%;height:62%;fill:none;stroke:var(--acc-on);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  html.spwn #hAv{width:38px;height:38px}
+  html.spwn .acwho .avatar{width:52px;height:52px}
   /* Spawn OS: the code box first; the email form only when asked for */
   .anycode,#aUseCode{display:none}
   html.spwn #auth .anycode{display:block}
@@ -2671,6 +2683,12 @@ try{
     <div class="acwho">
       <span class="avatar" id="acAv"></span>
       <div><b id="acName"></b><div class="muted small" id="acMeta"></div></div>
+    </div>
+    <!-- 8 Oct, Spawn OS: the two ways out, where people look for them
+         (Wendell: "put log out inside the avatar when clicked") -->
+    <div class="acquick" id="acQuick">
+      <button type="button" class="btn ghost" id="acSwitch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m17 3 4 4-4 4"/><path d="M21 7H5"/><path d="m7 21-4-4 4-4"/><path d="M3 17h16"/></svg>Switch person</button>
+      <button type="button" class="btn ghost danger-text" id="acSignOut"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>Sign out of this device</button>
     </div>
 
     <!-- counter, office and owner: setting up devices and approving Gmail -->
@@ -4485,7 +4503,7 @@ function paintWho(){
   const wx = document.createElement('span'); wx.className = 'wx';
   wx.textContent = ' · ' + BENCH_NAME[BENCH] + ' · b' + BUILD;
   w.append(nm, wx);
-  $('#hAv').textContent = (ME || '?').trim().charAt(0).toUpperCase();
+  paintAvatar($('#hAv'));
 }
 
 async function openShop(){
@@ -7438,8 +7456,14 @@ async function cacheName(){
     return keys.length === 1 ? keys[0] : keys.join(', ');
   }catch(e){ return ''; }   // no worker, a dev copy, or storage refused
 }
+const PERSON_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>';
+function paintAvatar(el){
+  if(!el) return;
+  if(document.documentElement.classList.contains('spwn')) el.innerHTML = PERSON_SVG;
+  else el.textContent = (ME || '?').trim().charAt(0).toUpperCase();
+}
 function openAccount(){
-  $('#acAv').textContent = (ME || '?').trim().charAt(0).toUpperCase();
+  paintAvatar($('#acAv'));
   $('#acName').textContent = ME;
   const meta = (STAFF ? BENCH_NAME[BENCH] : 'Shop account') + ' · ' + SHOP.name + ' · build ' + BUILD;
   $('#acMeta').textContent = meta;
@@ -7447,6 +7471,7 @@ function openAccount(){
      with no worker simply keeps the line it already has. */
   cacheName().then(n => { if(n && acctDlg.open) $('#acMeta').textContent = meta + ' · ' + n; });
   $('#acStaff').hidden = !STAFF;
+  $('#acSwitch').hidden = !onRoster().length;       // nobody to switch to without a roster
   $('#acNone').hidden = !!STAFF;
   $('#acAdmin').hidden = !canAddDevice();         // Add a device, People and Gmail
   ['#nName','#nPin','#pOld','#pNew','#pNew2'].forEach(s => { $(s).value = ''; });
@@ -7455,6 +7480,21 @@ function openAccount(){
   acctDlg.showModal();
 }
 $('#hAcct').onclick = openAccount;
+$('#acSwitch').onclick = () => { acctDlg.close(); showPicker(); };
+/* Spawn OS's own words: from this menu the way to change who is using the
+   phone is the button right above, not the lock screen's "Someone else".
+   Same act as the lock screen's Sign out: asked first, this device only. */
+$('#acSignOut').onclick = async () => {
+  const roster = onRoster().length > 0;
+  const go = await ask('This phone will need the shop email and password to sign in again, ' +
+    'and only the owner has those.' + (roster ? ' To change who is using the app, tap "Switch person" instead.' : ''),
+    { head: 'Sign out of this device', yes: 'Sign out anyway', no: 'Stay signed in', danger: true });
+  if(!go) return;
+  acctDlg.close();
+  clearTapped();
+  await sb.auth.signOut({ scope: 'local' });
+  location.reload();
+};
 
 /* ── device setup (28 Sep, PLAN-qr-device-setup.md) ──
    A counter, office or owner makes a one-time code (setup_code_create, their
@@ -8108,7 +8148,7 @@ $('#nSave').onclick = async () => {
   if(last && last.id === STAFF.id){ try{ safeStore.setItem(LAST_KEY, JSON.stringify({ id: STAFF.id, name })); }catch(e){} }
   paintWho();
   $('#acName').textContent = name;
-  $('#acAv').textContent = name.charAt(0).toUpperCase();
+  paintAvatar($('#acAv'));
   if(ROLE === 'owner'){ await loadRoster(); renderStaff(); }
   msg.className = 'msg ok'; msg.textContent = 'Name changed.';
 };
