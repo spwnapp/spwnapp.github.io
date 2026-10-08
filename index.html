@@ -24,7 +24,7 @@
      never match. */
   if(h === 'spwnapp.github.io'){
     document.documentElement.classList.add('spwn');
-    document.title = 'Spawn Notebook';
+    document.title = 'Spawn OS';
     /* Spawn Notebook's own typeface (8 Oct, "make the fonts good to look
        at"). Loaded here so Decal Fix's pages never fetch it. */
     var f = document.createElement('link');
@@ -1497,6 +1497,16 @@
      screen never offers to start a shop. A ?shopcode= link still opens
      anywhere - a full-edition code opens the address it was made on. */
   html:not(.spwn) #aShopNew{display:none}
+  /* Spawn OS: the code box first; the email form only when asked for */
+  .anycode,#aUseCode{display:none}
+  html.spwn #auth .anycode{display:block}
+  html.spwn #auth:not(.byemail) .emailpart{display:none}
+  html.spwn #auth.byemail .anycode{display:none}
+  html.spwn #auth.byemail #aUseCode{display:block}
+  html.spwn #auth .codeonly{display:none}
+  html.spwn #aAny{font-size:22px;font-weight:800;letter-spacing:.1em;text-align:center;text-transform:uppercase;padding:16px 12px}
+  html.spwn .anyhint{text-align:center;margin:10px 0 0}
+  html.spwn #aUseEmail{display:block;margin:16px auto 0}
   /* "Admin": small and quiet - it is Spawn's door, not the shop's */
   .admlink{display:block;margin:18px auto 0;border:0;background:none;font:inherit;font-size:12px;font-weight:700;
     letter-spacing:.06em;color:var(--grey);cursor:pointer;padding:6px 10px}
@@ -1599,7 +1609,9 @@
      then that colour; --acc-on is the ink that reads on the accent. */
   html.spwn{--acc1:#FFD25C;--acc2:#F5A300;--acc-ink:#A35F00;--acc-on:#2B1D00;
     --soft:8px 8px 22px rgba(150,160,180,.30), -6px -6px 18px rgba(255,255,255,.95)}
-  body.nb.brand{--acc1:color-mix(in srgb, var(--nb-brand) 72%, #fff);--acc2:var(--nb-brand);--acc-ink:var(--nb-brand);--acc-on:#fff}
+  /* a shop colour runs from itself to its deeper shade - never lighter - so white
+     text on it always reads (brandShades already darkened it to 4.5:1) */
+  body.nb.brand{--acc1:var(--nb-brand);--acc2:var(--nb-brand-deep);--acc-ink:var(--nb-brand);--acc-on:#fff}
   html.spwn body{background-color:#EEF0F4;
     background-image:radial-gradient(42rem 26rem at 50% -12%, color-mix(in srgb, var(--acc1) 30%, transparent), transparent 70%),
                      linear-gradient(180deg,#F6F7FA,#E8EBF0)}
@@ -1609,6 +1621,47 @@
     box-shadow:0 10px 20px -12px var(--acc2)}
   html.spwn .btn.ghost{background:#fff;box-shadow:var(--soft);border-color:transparent}
   html.spwn #shopnew{--wz:var(--acc2);--wz-deep:var(--acc-ink)}
+  /* ── 8 Oct AUDIT: what still looked like Decal Fix on Spawn OS (Wendell:
+     "check if there are features like this that are the same with decalfix
+     ... make sure whatever the color the letters are readable and clear") ── */
+  /* pop-up headers: no honeycomb band, no wave - a clean white top */
+  html.spwn .dh{background:#fff;background-image:none;color:#1E2230;padding-bottom:15px;
+    border-bottom:1px solid rgba(15,23,42,.08)}
+  html.spwn .dh::after{display:none}
+  html.spwn .dh .chip{background:#F2F4F7;border-color:rgba(15,23,42,.10);color:#1E2230}
+  /* the calculator's = and operators take the accent, not Decal Fix red */
+  html.spwn .ck.eq{background:linear-gradient(135deg,var(--acc1),var(--acc2));color:var(--acc-on);border-color:transparent}
+  html.spwn .ck.op{color:var(--acc-ink)}
+  /* chosen pills and tabs: the accent, not black */
+  html.spwn .btab[aria-selected="true"],html.spwn .cfilt button[aria-pressed="true"],
+  html.spwn .otype button[aria-pressed="true"],html.spwn .pm button[aria-pressed="true"],
+  html.spwn #lNames button[aria-selected=true]{background:linear-gradient(135deg,var(--acc1),var(--acc2));
+    border-color:transparent;color:var(--acc-on)}
+  html.spwn .btab[aria-selected="true"] .n{color:var(--acc-on)}
+  /* the "Powered by" band: light, not black */
+  html.spwn .appfoot{background:transparent}
+  html.spwn .appfoot span{color:#5B6273}
+  html.spwn .appfoot strong{color:#1E2230}
+  /* Sales: white cards, the figure carries the colour */
+  html.spwn .tile{background:#fff;border-color:transparent;border-radius:20px;box-shadow:var(--soft)}
+  html.spwn .tile .k{color:#5B6273}
+  html.spwn .tile.dark .k,html.spwn .tile.dark .note{color:#5B6273}
+  html.spwn .tile.dark .v{color:#1E2230}
+  html.spwn .tile .split{color:#4B5563}
+  html.spwn .tile .split b{color:#1E2230}
+  html.spwn .tile .split .un b{color:#BE123C}
+  html.spwn .tile.cash{background:linear-gradient(180deg,#ECFDF5,#fff)}
+  html.spwn .tile.cash .k,html.spwn .tile.cash .v,html.spwn .tile.cash .note,html.spwn .tile.got .k,html.spwn .tile.got .v{color:#047857}
+  html.spwn .tile.cash .bym{color:#4B5563}
+  html.spwn .tile.cash .bym b{color:#1E2230}
+  html.spwn .tile.cash .bym .cash{color:#047857}
+  html.spwn .tile.got{background:linear-gradient(180deg,#F0FDF4,#fff)}
+  html.spwn .tile.ar{background:linear-gradient(180deg,#FFFBEB,#fff)}
+  html.spwn .tile.ar .k,html.spwn .tile.ar .v,html.spwn .tile.ar .note{color:#92400E}
+  html.spwn .tile.red{background:linear-gradient(180deg,#FFF1F2,#fff)}
+  html.spwn .tile.red .k,html.spwn .tile.red .v{color:#BE123C}
+  /* "Spawn default" is amber now, not the old teal */
+  html.spwn #brSw .sw[aria-label="Spawn default"] i{background:linear-gradient(135deg,#FFD25C,#F5A300)!important}
   /* the header: light and frosted, the band and its wave gone */
   body.nb header{background:rgba(246,247,250,.82)!important;color:#1E2230;
     -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 1px 0 rgba(15,23,42,.06)}
@@ -1628,7 +1681,7 @@
   body.nb .tiles .t-new .tic{background:rgba(255,255,255,.38);box-shadow:none}
   body.nb .tiles .t-new .tic svg{stroke:var(--acc-on)}
   /* Past due is the one alarm: red only while something is late */
-  body.nb .tiles .ntile.t-late:not(.calm){background:linear-gradient(135deg,#FB7185,#E11D48);color:#fff}
+  body.nb .tiles .ntile.t-late:not(.calm){background:linear-gradient(135deg,#E11D48,#9F1239);color:#fff}
   body.nb .tiles .ntile.t-late:not(.calm) .tn{color:#fff;opacity:.9}
   body.nb .tiles .t-late:not(.calm) .tic{background:rgba(255,255,255,.25);box-shadow:none}
   body.nb .ntile:focus-visible{outline:3px solid var(--acc2)}
@@ -1639,7 +1692,7 @@
     background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-radius:24px;
     box-shadow:0 16px 34px -16px rgba(15,23,42,.38), 0 0 0 1px rgba(15,23,42,.05)}
   body.nb .nbnav button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;
-    background:none;font:inherit;font-size:11px;font-weight:700;color:#8A90A2;padding:8px 0;cursor:pointer;
+    background:none;font:inherit;font-size:11px;font-weight:700;color:#5B6273;padding:8px 0;cursor:pointer;
     -webkit-tap-highlight-color:transparent}
   body.nb .nbnav button[hidden]{display:none}
   body.nb .nbnav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -1802,7 +1855,7 @@ try{
     var spS = document.getElementById('splash');
     var spI = spS && spS.querySelector('img'), spO = spS && spS.querySelector('.osname');
     if(spI) spI.remove();
-    if(spO){ spO.textContent = 'SPAWN NOTEBOOK'; spO.className = 'osname nbname'; }
+    if(spO){ spO.textContent = 'SPAWN OS'; spO.className = 'osname nbname'; }
     if(spS) spS.style.backgroundImage = 'none';
   }
 }catch(e){}
@@ -1815,17 +1868,32 @@ try{
      a slow line. boot() reveals it, and so does its own failure path. -->
 <section id="auth" hidden>
   <div class="box">
-    <h1 class="mark"><span class="df-only">Decal<span class="b">Fix</span> OS</span><span class="spwn-only">Spawn<span class="b"> Notebook</span></span></h1>
+    <h1 class="mark"><span class="df-only">Decal<span class="b">Fix</span> OS</span><span class="spwn-only">Spawn<span class="b"> OS</span></span></h1>
     <p class="s"><span class="df-only">Job orders, balances and sales.</span><span class="spwn-only">Your shop's orders, payments and sales.</span></p>
     <!-- One account per shop, and public sign-up is off from 16 Sep, so
          "New account" pointed at an endpoint the server refuses. It is hidden
          rather than deleted: onboarding shop #2 needs it back for as long as
          sign-up is re-opened, and `SIGNUP_OPEN` is the one line to flip. -->
+    <!-- 8 Oct, SPAWN OS ONLY: a code comes first (Wendell: "the shop will only
+         have to enter their code, Spawn will give it to them ... then log in").
+         Ten characters is a shop code from Spawn -> the new-shop questions;
+         eight is a device code from the shop's owner -> this phone joins the
+         shop. The email form is behind "Owner? Sign in with email". Decal
+         Fix's sign-in never shows this box. -->
+    <div class="anycode" id="aAnyWrap">
+      <label>Your code<input id="aAny" autocomplete="off" autocapitalize="characters" spellcheck="false"
+             maxlength="14" placeholder="e.g. K7Q4M-ZP9RW"></label>
+      <button class="btn" id="aAnyGo" style="width:100%">Continue</button>
+      <p class="small muted anyhint">A code from <b>Spawn</b> starts a new shop.
+        A code from your <b>shop's owner</b> adds this phone.</p>
+      <div class="msg" id="aAnyMsg"></div>
+      <button type="button" class="linky" id="aUseEmail">Owner? Sign in with email</button>
+    </div>
     <div class="tabsw" role="tablist" id="authTabs" hidden>
       <button id="tabIn"  role="tab" aria-selected="true">Sign in</button>
       <button id="tabUp"  role="tab" aria-selected="false">New account</button>
     </div>
-    <div class="row">
+    <div class="row emailpart">
       <label>Email<input id="aEmail" type="email" autocomplete="email"></label>
       <label>Password
         <span class="pwwrap">
@@ -1841,21 +1909,22 @@ try{
            password ever sees this box; staff tap a PIN and never do. -->
       <label class="stay"><input type="checkbox" id="aStay" checked>
         <span>Keep this device signed in</span></label>
-      <p class="small muted" id="aStayNote">Untick on a shared or personal computer -
-        closing the browser then signs the shop out, and the password is needed again.</p>
+      <p class="small muted" id="aStayNote"><span class="df-only">Untick on a shared or personal computer -
+        closing the browser then signs the shop out, and the password is needed again.</span><span class="spwn-only">Untick on a shared computer.</span></p>
       <label id="wrapName" hidden>Your name<input id="aName" autocomplete="name"></label>
       <label id="wrapCode" hidden>Join code<input id="aCode" placeholder="Code from the owner" autocomplete="off"></label>
     </div>
-    <button class="btn" id="aGo" style="width:100%">Sign in</button>
-    <button type="button" class="linky" id="aForgot">Forgot your password?</button>
+    <button class="btn emailpart" id="aGo" style="width:100%">Sign in</button>
+    <button type="button" class="linky emailpart" id="aForgot">Forgot your password?</button>
+    <button type="button" class="linky" id="aUseCode">Use a code instead</button>
     <div class="msg" id="aMsg"></div>
     <!-- 28 Sep: a device can be set up with a one-time code from the counter,
          office or owner - no password passed around. PLAN-qr-device-setup.md -->
-    <div class="setor"><span>or</span></div>
-    <button type="button" class="btn ghost" id="aSetup" style="width:100%">Set up with a code</button>
-    <p class="small muted" style="text-align:center;margin:6px 0 0">Got a code from the counter? Tap here.</p>
+    <div class="setor codeonly"><span>or</span></div>
+    <button type="button" class="btn ghost codeonly" id="aSetup" style="width:100%">Set up with a code</button>
+    <p class="small muted codeonly" style="text-align:center;margin:6px 0 0">Got a code from the counter? Tap here.</p>
     <!-- notebook stage 3: a NEW shop, with a code from Spawn -->
-    <button type="button" class="linky" id="aShopNew" style="margin-top:14px">New shop? Start with a code from Spawn</button>
+    <button type="button" class="linky codeonly" id="aShopNew" style="margin-top:14px">New shop? Start with a code from Spawn</button>
     <!-- 8 Oct: Spawn makes a new shop's code right here (Worker /admin/shop-code,
          nb21a shop_code_issue, the admin PASSWORD). Spawn Notebook's address only. -->
     <button type="button" class="admlink" id="aAdmin">Admin</button>
@@ -1876,7 +1945,7 @@ try{
 <section id="shopnew" hidden>
   <div class="box">
     <div class="snhead">
-      <span class="snbrand">Spawn<b> Notebook</b></span>
+      <span class="snbrand">Spawn<b> OS</b></span>
       <h1 id="snTitle">Start your shop</h1>
       <p class="s" id="snSub">With the code Spawn gave you</p>
     </div>
@@ -1953,7 +2022,7 @@ try{
      link (?setup=CODE). The device is not signed in yet. -->
 <section id="setup" hidden>
   <div class="box">
-    <h1 class="mark"><span class="df-only">Decal<span class="b">Fix</span> OS</span><span class="spwn-only">Spawn<span class="b"> Notebook</span></span></h1>
+    <h1 class="mark"><span class="df-only">Decal<span class="b">Fix</span> OS</span><span class="spwn-only">Spawn<span class="b"> OS</span></span></h1>
     <p class="s">Set up this device</p>
     <div id="suStep1">
       <label>Setup code<input id="suCode" autocomplete="off" autocapitalize="characters"
@@ -7669,7 +7738,7 @@ async function createShop(){
        email filled in - never "could not create", which would send them to
        make a second one. */
     $('#snGo').disabled = false;
-    $('#shopnew').hidden = true; $('#auth').hidden = false;
+    $('#shopnew').hidden = true; $('#auth').hidden = false; $('#auth').classList.add('byemail');
     $('#aEmail').value = body.email;
     $('#aMsg').className = 'msg ok';
     $('#aMsg').textContent = r.shop_name + ' is made. Sign in with your email and password.';
@@ -7693,6 +7762,22 @@ async function createShop(){
   setTimeout(() => location.replace(location.origin + location.pathname), 700);
 }
 $('#aShopNew').onclick = () => showShopNew('');
+/* Spawn OS's one code box: ten characters is a new shop, eight is a phone
+   joining a shop. Each screen then checks the code with the Worker. */
+function anyCodeGo(){
+  const c = String($('#aAny').value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const m = $('#aAnyMsg'); m.className = 'msg'; m.textContent = '';
+  if(c.length === 10) return showShopNew(c);
+  if(c.length === 8)  return showSetup(c);
+  m.className = 'msg err';
+  m.textContent = c ? 'A code has 8 letters and numbers (from your shop) or 10 (from Spawn). Check it and try again.'
+                    : 'Type the code you were given.';
+}
+$('#aAnyGo').onclick = () => anyCodeGo();
+$('#aAny').addEventListener('keydown', e => { if(e.key === 'Enter') anyCodeGo(); });
+$('#aAny').addEventListener('input', () => { $('#aAnyMsg').textContent = ''; });
+$('#aUseEmail').onclick = () => { $('#auth').classList.add('byemail'); setTimeout(() => $('#aEmail').focus(), 50); };
+$('#aUseCode').onclick = () => { $('#auth').classList.remove('byemail'); setTimeout(() => $('#aAny').focus(), 50); };
 /* ── Spawn admin: a new shop's code from the sign-in screen (8 Oct) ──
    The Worker hands the password to the database (nb21a shop_code_issue);
    a wrong one costs one of five tries. The password box is emptied after
@@ -7729,7 +7814,7 @@ $('#admGo').onclick = async () => {
 $('#admShare').onclick = async () => {
   const link = $('#admShare').dataset.link || '', code = $('#admShare').dataset.code || '';
   if(navigator.share){
-    try{ await navigator.share({ title: 'Your Spawn Notebook code', text: 'Start your shop with this code: ' + code, url: link }); return; }
+    try{ await navigator.share({ title: 'Your Spawn OS code', text: 'Start your shop with this code: ' + code, url: link }); return; }
     catch(e){ if(e && e.name === 'AbortError') return; }
   }
   try{ await navigator.clipboard.writeText(link); toast('Link copied.'); }
