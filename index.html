@@ -190,6 +190,18 @@
   .wzlogo span b{color:var(--wz);font-size:15px}
   .wzlogo-again{position:absolute;right:10px;bottom:8px;font-size:12px !important;font-weight:700}
   .wzcard .swatches{margin:8px 0 4px}
+  /* "What do you sell?" - tap all that fit */
+  .sellchips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .sellchips button{display:grid;gap:1px;text-align:left;padding:8px 10px;border-radius:12px;border:1.5px solid #E1E4EA;
+    background:#fff;font:inherit;color:#1E2230;cursor:pointer;min-width:0}
+  .sellchips button b{font-size:13.5px;line-height:1.25}
+  .sellchips button small{font-size:11.5px;color:#5B6273;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* one line per answer on the summary, so nine answers still fit a small phone */
+  html.spwn #wzRev .wzrow .v{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .sellchips button[aria-pressed="true"]{border-color:var(--wz,#F5A300);background:color-mix(in srgb, var(--wz,#F5A300) 12%, #fff);
+    box-shadow:0 0 0 1px var(--wz,#F5A300) inset}
+  .sellchips button[aria-pressed="true"] b::before{content:"\2713  ";color:var(--wz-deep,#A35F00)}
+  .sellchips button:focus-visible{outline:3px solid #1E2230;outline-offset:2px}
   /* while the questions run, the header is only the badge: the card is the screen */
   #shopnew.inwiz #snTitle,#shopnew.inwiz #snSub,#shopnew.inwiz #snBack{display:none}
   #shopnew.inwiz .snhead{margin-bottom:10px}
@@ -1668,6 +1680,11 @@
       linear-gradient(170deg, color-mix(in srgb, var(--acc1) 34%, #F6F7FA), #EEF0F4 60%);
     background-size:100% 46vh, auto;background-position:bottom, 0 0;background-repeat:no-repeat}
   /* the chooser: a small window onto each background */
+  #prOff:empty{display:none}
+  #prOff h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#5B6273;margin:16px 0 6px}
+  #prOff .prrow{opacity:.62}
+  #prOff .prrow .pr{color:#5B6273}
+  #pdOff{color:#BE123C;display:block;margin:10px 0 0}
   .bgpick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px}
   .bgpick button{display:grid;gap:6px;padding:0;border:0;background:none;font:inherit;font-size:12.5px;font-weight:700;
     color:#1E2230;cursor:pointer;text-align:center}
@@ -2084,6 +2101,14 @@ try{
         <h2>Where is your shop?</h2>
         <p class="wzhint">Optional. It is printed on the claim stub.</p>
         <input id="snAddr" maxlength="160" autocomplete="street-address" placeholder="e.g. Rizal Ave, Dipolog City">
+      </div>
+      <!-- 8 Oct, spawn-136: the products are made from the answer (Wendell:
+           "is it better to ask also in the questions what are the products?
+           then make based on the answer but still you can add, remove") -->
+      <div class="wzcard" data-step="sell" hidden>
+        <h2>What do you sell?</h2>
+        <p class="wzhint">Tap all that fit. Your product list is made from this - change it any time.</p>
+        <div class="sellchips" id="snSell" role="group" aria-label="What the shop sells"></div>
       </div>
       <div class="wzcard" data-step="phone" hidden>
         <h2>The shop's phone number</h2>
@@ -2517,9 +2542,10 @@ try{
          item_set_price; this card is only where the button lives. -->
     <div class="card" id="prCard" hidden>
       <h2>Your products</h2>
-      <p class="small muted">Tap a product to set its price. New orders fill it in by themselves;
-        orders already saved keep the price they were sold at.</p>
+      <p class="small muted">Tap a product to change its name, unit or price, or to switch it off.
+        New orders use the change; orders already saved keep what they were sold as.</p>
       <div id="prList"></div>
+      <div id="prOff"></div>
     </div>
   </section>
   <section class="view" id="vCust" hidden>
@@ -3218,14 +3244,17 @@ try{
 <dialog id="priceDlg">
   <div class="dh"><span class="no" id="pdHead">Price</span></div>
   <div class="db">
+    <label>Name<input id="pdName" maxlength="80" autocomplete="off"></label>
+    <label>Sold by the<select id="pdUnit"></select></label>
     <label><span id="pdLabel">Price</span><input id="pdPrice" inputmode="decimal" autocomplete="off" placeholder="Leave blank to quote each order"></label>
     <p class="small muted" id="pdHint"></p>
     <label id="pdPinWrap">Your PIN<input id="pdPin" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></label>
     <div class="msg" id="pdMsg"></div>
+    <button type="button" class="linkbtn" id="pdOff">Switch off this product</button>
   </div>
   <div class="df">
     <button class="btn ghost" id="pdNo">Cancel</button>
-    <button class="btn" id="pdSave">Save price</button>
+    <button class="btn" id="pdSave">Save</button>
   </div>
 </dialog>
 
@@ -4787,11 +4816,18 @@ const tick = () => {
 };
 tick(); setInterval(tick, 1000);
 
+let ITEMS_OFF = [];
 async function loadItems(){
-  const { data } = await sb.from('item_types')
-    .select('id,name,unit,default_price,notes,size_add,price_open,sort_order,ask_name')
-    .eq('active', true).order('sort_order');
-  ITEMS = data || [];
+  /* A notebook shop reads its switched-off products too, for the Products
+     screen to switch back on; the picker still sees only the active ones. A
+     full shop reads exactly what it always did. */
+  let q = sb.from('item_types')
+    .select('id,name,unit,default_price,notes,size_add,price_open,sort_order,ask_name' + (NB() ? ',active' : ''));
+  if(!NB()) q = q.eq('active', true);
+  const { data } = await q.order('sort_order');
+  const all = data || [];
+  ITEMS = NB() ? all.filter(i => i.active !== false) : all;
+  ITEMS_OFF = NB() ? all.filter(i => i.active === false && !i.ask_name) : [];
 }
 
 /* ── new order ── */
@@ -7790,8 +7826,67 @@ function showShopNew(code){
 /* ── the wizard ──
    WZ is the order of the cards. A card is checked when Next is pressed;
    the optional ones (logo, address, phone) say Skip while empty. */
-const WZ = ['shop', 'name', 'email', 'pass', 'logo', 'addr', 'phone', 'review'];
-const WZ_OPTIONAL = { logo: () => !SN_LOGO, addr: () => !$('#snAddr').value.trim(), phone: () => !$('#snPhone').value.trim() };
+const WZ = ['shop', 'sell', 'name', 'email', 'pass', 'logo', 'addr', 'phone', 'review'];
+const WZ_OPTIONAL = { sell: () => !SN_SELL.size, logo: () => !SN_LOGO, addr: () => !$('#snAddr').value.trim(), phone: () => !$('#snPhone').value.trim() };
+/* What a print shop sells, in groups. Each is a set of products, made with NO
+   price - a starter price would be somebody else's (build20e). The names that
+   match the 12 starter items keep the starter row. */
+const SELL = [
+  { id: 'tarp',    name: 'Tarpaulin & signs',     items: [['Tarpaulin','sqft'], ['Sintra board','sqft'], ['Acrylic signage','pc'], ['Roll-up standee','pc']] },
+  { id: 'shirt',   name: 'Shirts & apparel',      items: [['T-shirt print','pc'], ['Jersey set','set'], ['Polo shirt print','pc'], ['Hoodie print','pc']] },
+  { id: 'sticker', name: 'Stickers & labels',     items: [['Sticker','sqft'], ['Vinyl cut','sqft'], ['Product label','pc'], ['DTF print','meter']] },
+  { id: 'mug',     name: 'Mugs & souvenirs',      items: [['Mug print','pc'], ['Tumbler','pc'], ['Keychain','pc'], ['Pin button','pc']] },
+  { id: 'id',      name: 'IDs & cards',           items: [['ID and lanyard','pc'], ['PVC ID','pc'], ['Calling card','pc']] },
+  { id: 'docs',    name: 'Printing & photos',     items: [['Document printing','pc'], ['Photocopy','pc'], ['Photo print','pc'], ['Lamination','pc']] },
+  { id: 'events',  name: 'Invitations & certificates', items: [['Invitation','pc'], ['Certificate','pc'], ['Souvenir program','pc']] },
+  { id: 'awards',  name: 'Medals & plaques',      items: [['Medal','pc'], ['Plaque','pc'], ['Trophy','pc']] }
+];
+/* every print shop charges for layout, whatever it prints */
+const SELL_ALWAYS = [['Layout / design fee', 'pc']];
+const SN_SELL = new Set();
+function paintSell(){
+  const box = $('#snSell'); if(!box) return;
+  box.innerHTML = '';
+  SELL.forEach(g => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.dataset.sell = g.id;
+    b.setAttribute('aria-pressed', String(SN_SELL.has(g.id)));
+    const t = document.createElement('b'); t.textContent = g.name;
+    const sm = document.createElement('small'); sm.textContent = g.items.map(x => x[0]).slice(0, 3).join(', ') + (g.items.length > 3 ? '…' : '');
+    b.append(t, sm);
+    b.onclick = () => {
+      SN_SELL.has(g.id) ? SN_SELL.delete(g.id) : SN_SELL.add(g.id);
+      paintSell();
+      $('#wzNext').textContent = WZ_OPTIONAL.sell() ? 'Skip' : 'Next';
+    };
+    box.appendChild(b);
+  });
+}
+/* After the shop is made and the owner signed in: add what was chosen and
+   switch off the starters that were not. Nothing here can stop the shop
+   opening - what did not set up is said, and the Products screen fixes it.
+   item_add and item_edit need no PIN on a shop with no people yet. */
+async function setupProducts(shopId, chosen = SN_SELL){
+  const want = new Map();
+  SELL.filter(g => chosen.has(g.id)).forEach(g => g.items.forEach(([n, u]) => want.set(n.toLowerCase(), [n, u])));
+  if(!want.size) return 0;
+  SELL_ALWAYS.forEach(([n, u]) => want.set(n.toLowerCase(), [n, u]));
+  const { data: have, error } = await sb.from('item_types').select('id,name,ask_name,active').eq('shop_id', shopId);
+  if(error) return want.size;
+  const off = [];
+  (have || []).forEach(it => {
+    if(it.ask_name) return;
+    const k = String(it.name).trim().toLowerCase();
+    if(want.has(k)) want.delete(k); else if(it.active !== false) off.push(it.id);
+  });
+  const call = (fn, args) => sb.rpc(fn, args).then(r => r.error ? 1 : 0, () => 1);
+  /* adds first: if the line drops halfway, the shop has more products, not fewer */
+  const added = await Promise.all([...want.values()].map(([n, u]) => call('item_add', { p_shop: shopId, p_name: n, p_unit: u })));
+  const offd  = await Promise.all(off.map(id => call('item_edit', { p_item: id, p_active: false, p_keep_price: true })));
+  return added.concat(offd).reduce((a, b) => a + b, 0);
+}
+paintSell();
+window.__setupProducts = (shopId, ids) => setupProducts(shopId, new Set(ids));   // for the suites
 let WZI = 0, SN_LOGO = null, SN_COLOR = null, SN_COLS = [];
 const snVal = id => $(id).value.trim().replace(/\s+/g, ' ');
 function wzProblem(step){
@@ -7837,9 +7932,11 @@ function paintReview(){
     `<button type="button" data-go="${step}">Change</button></div>`;
   $('#wzRev').innerHTML =
     row('Shop', 'shop', snVal('#snShop')) +
+    row('Sells', 'sell', SELL.filter(g => SN_SELL.has(g.id)).map(g => g.name).join(', ') || 'The usual print-shop list') +
     row('Owner', 'name', snVal('#snName')) +
-    row('Email', 'email', $('#snEmail').value.trim().toLowerCase()) +
-    row('Password', 'pass', '•'.repeat(Math.min(12, $('#snPass').value.length))) +
+    /* email and password on one line: the dots say nothing, and a ninth row
+       pushed Create my shop off a 360x640 phone */
+    row('Sign in', 'email', $('#snEmail').value.trim().toLowerCase()) +
     row('Logo', 'logo', '', SN_LOGO ? `<span class="v"><img src="${esc(SN_LOGO)}" alt=""></span>` : '<span class="v none">Not given</span>') +
     row('Address', 'addr', snVal('#snAddr')) +
     row('Phone', 'phone', snVal('#snPhone'));
@@ -7955,6 +8052,14 @@ async function createShop(){
       brandWrite({ shop: r.shop_id, edition: 'notebook', name: r.shop_name, color: SN_COLOR || null,
                    logo_at: data[0].logo_at || null, logo: SN_LOGO });
     }catch(e){ msg.textContent = 'Welcome to ' + r.shop_name + '! The logo did not save - add it in Settings. Opening your shop…'; }
+  }
+  if(SN_SELL.size && r.shop_id){
+    const was = msg.textContent;
+    msg.textContent = 'Setting up your products…';
+    let failed = 0;
+    try{ failed = await setupProducts(r.shop_id); }catch(e){ failed = 1; }
+    msg.textContent = failed ? 'Welcome to ' + r.shop_name + '! Some products did not set up - add them on the Products screen. Opening your shop…'
+                             : was;
   }
   setTimeout(() => location.replace(location.origin + location.pathname), 700);
 }
@@ -9132,15 +9237,29 @@ function renderPriceCard(){
      is named on each order and never has a price of its own. */
   const items = ITEMS.filter(i => !i.ask_name);
   if(!items.length){ list.innerHTML = '<p class="small muted">No products yet.</p>'; return; }
-  items.forEach(i => {
+  const rowOf = (i, off) => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'prrow'; b.dataset.item = i.id;
     b.innerHTML = '<span class="nm">' + esc(i.name) +
       (i.unit && i.unit !== 'pc' ? '<small>sold by the ' + esc(i.unit) + '</small>' : '') + '</span>' +
-      '<span class="pr' + (i.price_open ? ' open' : '') + '">' + esc(priceText(i)) + '</span>';
+      '<span class="pr' + (i.price_open && !off ? ' open' : '') + '">' + esc(off ? 'Switched off' : priceText(i)) + '</span>';
     b.onclick = () => openPrice(i);
-    list.appendChild(b);
-  });
+    return b;
+  };
+  items.forEach(i => list.appendChild(rowOf(i, false)));
+  const offBox = $('#prOff'); offBox.innerHTML = '';
+  if(ITEMS_OFF.length){
+    const h = document.createElement('h3'); h.textContent = 'Switched off - tap to switch back on';
+    offBox.appendChild(h);
+    ITEMS_OFF.forEach(i => offBox.appendChild(rowOf(i, true)));
+  }
+}
+const UNIT_NAMES = { pc:'piece', set:'set', sqft:'square foot (sqft)', meter:'meter', pack:'pack', box:'box', pair:'pair' };
+function paintUnits(cur){
+  const sel = $('#pdUnit'); sel.innerHTML = '';
+  const units = [...new Set(Object.keys(UNIT_NAMES).concat(ITEMS.concat(ITEMS_OFF).map(i => String(i.unit || 'pc').toLowerCase())))];
+  units.forEach(u => { const o = document.createElement('option'); o.value = u; o.textContent = UNIT_NAMES[u] || u; sel.appendChild(o); });
+  sel.value = String(cur || 'pc').toLowerCase();
 }
 const priceDlg = $('#priceDlg');
 function openPrice(i){
@@ -9148,8 +9267,14 @@ function openPrice(i){
   $('#pdHead').textContent = i.name;
   $('#pdLabel').textContent = i.unit && i.unit !== 'pc' ? 'Price per ' + i.unit : 'Price';
   $('#pdPrice').value = i.price_open ? '' : String(Number(i.default_price));
-  $('#pdHint').textContent = 'Now: ' + priceText(i) + '. Leave the box blank to quote it on each order.' +
+  const off = i.active === false;
+  $('#pdHint').textContent = (off ? 'Switched off - Save puts it back on the order form. ' : 'Now: ' + priceText(i) + '. ') +
+    'Leave the price blank to quote it on each order.' +
     (Number(i.size_add) > 0 ? ' Bigger sizes still add ' + peso(i.size_add) + ' a step.' : '');
+  $('#pdName').value = i.name;
+  paintUnits(i.unit);
+  $('#pdOff').hidden = off;
+  $('#pdSave').textContent = off ? 'Switch on and save' : 'Save';
   $('#pdPin').value = '';
   $('#pdPinWrap').hidden = !STAFF;
   $('#pdMsg').className = 'msg'; $('#pdMsg').textContent = '';
@@ -9158,6 +9283,33 @@ function openPrice(i){
   $('#pdPrice').focus();
 }
 $('#pdNo').onclick = () => priceDlg.close();
+/* "Remove" is switch off: the product leaves the order form, old orders keep
+   it by name, and the Products screen can switch it back on. Asked first. */
+$('#pdOff').onclick = async () => {
+  const i = PR_ITEM; if(!i) return;
+  const msg = $('#pdMsg');
+  const bad = t => { msg.className = 'msg err'; msg.textContent = t; };
+  const pin = STAFF ? $('#pdPin').value.trim() : '';
+  if(STAFF && !/^[0-9]{4}$/.test(pin)) return bad('Type your PIN first - it is four digits.');
+  try{ assertWritable(); }catch(err){ return bad(err.message); }
+  const go = await ask('Switch off ' + i.name + '? It leaves the order form. Orders already saved keep it, ' +
+    'and you can switch it back on here.', { head: 'Switch off', yes: 'Switch off', no: 'Keep it', danger: true });
+  if(!go) return;
+  msg.className = 'msg'; msg.textContent = 'Switching off…';
+  let res;
+  try{
+    const { data, error } = await sb.rpc('item_edit', { p_item: i.id, p_active: false, p_keep_price: true,
+      p_staff: STAFF ? STAFF.id : null, p_pin: STAFF ? pin : null });
+    if(error) throw error;
+    res = data;
+  }catch(e){ return bad(e.message || 'That did not switch off.'); }
+  if(res === null || res === undefined){ $('#pdPin').value = ''; return bad('That is not your PIN.'); }
+  await loadItems();
+  priceDlg.close();
+  renderPriceCard();
+  if(typeof renderHome === 'function' && NB()) renderHome();
+  toast(i.name + ' is switched off.');
+};
 $('#pdSave').onclick = async () => {
   const i = PR_ITEM; if(!i) return;
   const msg = $('#pdMsg');
@@ -9168,14 +9320,26 @@ $('#pdSave').onclick = async () => {
   if(!Number.isFinite(pr) || pr < 0) return bad('Type the price as a number, like 45 or 45.50.');
   if(pr > 1000000) return bad('That price is too big - check the number.');
   const pin = STAFF ? $('#pdPin').value.trim() : '';
+  const nm = $('#pdName').value.trim().replace(/\s+/g, ' ');
+  const un = $('#pdUnit').value || 'pc';
+  if(nm.length < 2) return bad("Type the product's name.");
   if(STAFF && !/^[0-9]{4}$/.test(pin)) return bad('Your PIN is four digits.');
   try{ assertWritable(); }catch(err){ return bad(err.message); }
   $('#pdSave').disabled = true; msg.className = 'msg'; msg.textContent = 'Saving…';
+  /* only the price changed: the price door (build20h), as before. A new
+     name, unit, or switching back on: item_edit (nb22b), which does all three
+     and the price in one PIN-checked step. */
+  const plain = nm === i.name && un === String(i.unit || 'pc').toLowerCase() && i.active !== false;
   let res;
   try{
-    const { data, error } = await sb.rpc('item_set_price', {
-      p_item: i.id, p_price: pr > 0 ? pr : null,
-      p_staff: STAFF ? STAFF.id : null, p_pin: STAFF ? pin : null });
+    const { data, error } = plain
+      ? await sb.rpc('item_set_price', {
+          p_item: i.id, p_price: pr > 0 ? pr : null,
+          p_staff: STAFF ? STAFF.id : null, p_pin: STAFF ? pin : null })
+      : await sb.rpc('item_edit', {
+          p_item: i.id, p_name: nm, p_unit: un, p_price: pr > 0 ? pr : null,
+          p_active: i.active === false ? true : null,
+          p_staff: STAFF ? STAFF.id : null, p_pin: STAFF ? pin : null });
     if(error) throw error;
     res = data;
   }catch(e){ $('#pdSave').disabled = false; return bad(e.message || 'That did not save.'); }
@@ -9186,10 +9350,12 @@ $('#pdSave').onclick = async () => {
   await loadItems();                       // the database's answer, not ours
   renderPriceCard();
   if(!$('#vNew').hidden) renderLines();    // an order being typed picks it up
+  if(NB()) renderHome();
   priceDlg.close();
   const now = ITEMS.find(x => x.id === i.id) || { ...i, ...res };
-  toast(now.price_open ? i.name + ' is quoted on each order'
-                       : i.name + ': ' + priceText(now) + ' from the next order');
+  const back = i.active === false ? ' - back on the order form' : '';
+  toast(now.price_open ? now.name + ' is quoted on each order' + back
+                       : now.name + ': ' + priceText(now) + ' from the next order' + back);
 };
 
 async function openOwed(id){
