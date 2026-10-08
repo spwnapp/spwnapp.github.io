@@ -1619,17 +1619,17 @@
   body.nb header .who{color:#6B7280}
   body.nb .hshop{color:#1E2230}
   /* the tiles: white floating cards with an amber badge; New order is the accent */
-  body.nb .tiles .ntile{background:#fff;color:#1E2230;box-shadow:var(--soft)}
-  body.nb .tiles .ntile .tn{color:#6B7280;opacity:1}
+  body.nb .tiles .ntile.ntile{background:#fff;color:#1E2230;box-shadow:var(--soft)}
+  body.nb .tiles .ntile.ntile .tn{color:#6B7280;opacity:1}
   body.nb .tiles .ntile .tic{background:linear-gradient(145deg,var(--acc1),var(--acc2));box-shadow:0 8px 16px -8px var(--acc2)}
   body.nb .tiles .ntile .tic svg{stroke:#fff}
-  body.nb .tiles .t-new{background:linear-gradient(135deg,var(--acc1),var(--acc2));color:var(--acc-on)}
-  body.nb .tiles .t-new .tn{color:var(--acc-on);opacity:.8}
+  body.nb .tiles .ntile.t-new{background:linear-gradient(135deg,var(--acc1),var(--acc2));color:var(--acc-on)}
+  body.nb .tiles .ntile.t-new .tn{color:var(--acc-on);opacity:.8}
   body.nb .tiles .t-new .tic{background:rgba(255,255,255,.38);box-shadow:none}
   body.nb .tiles .t-new .tic svg{stroke:var(--acc-on)}
   /* Past due is the one alarm: red only while something is late */
-  body.nb .tiles .t-late:not(.calm){background:linear-gradient(135deg,#FB7185,#E11D48);color:#fff}
-  body.nb .tiles .t-late:not(.calm) .tn{color:#fff;opacity:.9}
+  body.nb .tiles .ntile.t-late:not(.calm){background:linear-gradient(135deg,#FB7185,#E11D48);color:#fff}
+  body.nb .tiles .ntile.t-late:not(.calm) .tn{color:#fff;opacity:.9}
   body.nb .tiles .t-late:not(.calm) .tic{background:rgba(255,255,255,.25);box-shadow:none}
   body.nb .ntile:focus-visible{outline:3px solid var(--acc2)}
   /* the bottom bar */
@@ -1649,6 +1649,20 @@
   body.nb .nbnav .nbplus svg{stroke:var(--acc-on);width:26px;height:26px;stroke-width:2.6}
   body.nb .nbnav .nbplus span{margin-top:1px}
   body.nb main{padding-bottom:110px}
+  body.nb .nbhome{max-width:880px;margin:0 auto}
+  @media (min-width:700px){
+    body.nb .tiles{grid-template-columns:repeat(3,1fr)}
+    body.nb .tiles .ntile.wide{grid-column:auto}
+    body.nb .tiles .ntile.t-new{grid-column:1/-1}
+  }
+  .nbhi{display:none}
+  body.nb .nbhi{display:block;font-size:26px;font-weight:800;letter-spacing:-.02em;color:#1E2230;margin:6px 2px 0;line-height:1.2}
+  body.nb .nbhi + .nbday{margin-top:2px}
+  body.nb #hBell{display:none}        /* the bell lives in the bottom bar */
+  body.nb .nbnav .nbbell{position:relative}
+  body.nb .nbnav .nbbadge{position:absolute;top:2px;left:calc(50% + 4px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;
+    background:#E11D48;color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px #fff}
+  body.nb .nbnav .nbbadge[hidden]{display:none}
   body.nb #fab{display:none!important}
   body.nb .calcfab{display:none!important}
   .hcalc2{display:none}
@@ -2045,6 +2059,7 @@ try{
        live, like that screen's weather tile. Drawn by renderHome(). -->
   <section class="view" id="vHome" hidden>
     <div class="nbhome">
+      <div class="nbhi" id="hmHi"></div>
       <div class="nbday" id="hmDay"></div>
       <div class="tiles" id="hmTiles">
         <button type="button" class="ntile wide t-new" data-go="new">
@@ -2572,8 +2587,7 @@ try{
   <button type="button" data-nb="orders"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg><span>Orders</span></button>
   <button type="button" data-nb="new" class="nbplus" aria-label="New order"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></i><span>New</span></button>
   <button type="button" data-nb="cust"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Customers</span></button>
-  <button type="button" data-nb="prod"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.42l8.7 8.7a2.43 2.43 0 0 0 3.42 0l6.58-6.58a2.43 2.43 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg><span>Products</span></button>
-  <button type="button" data-nb="lock" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>Lock</span></button>
+  <button type="button" data-nb="alerts" class="nbbell"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><b class="nbbadge" id="nbAlertN" hidden></b><span>Alerts</span></button>
 </div>
 
 <div class="appfoot"><i class="bullet"></i><span>Powered by <strong>Spawn Solutions</strong></span></div>
@@ -8225,7 +8239,7 @@ function renderHome(){
                               .map(custKey));
     $('#hmCust').textContent = owing.size ? n(owing.size, 'owes', 'owe') : 'Nobody owes';
   }else $('#hmCust').textContent = 'Customers';
-  $('#hmSalesTile').hidden = !canSeeMoney();
+  $('#hmSalesTile').hidden = !nbOwner();
   if(canSeeMoney() && DASH_DATA){
     const t = DASH_DATA.t;
     const cash = (DASH_DATA.pays || []).filter(p => p.method === 'cash' &&
@@ -8233,7 +8247,12 @@ function renderHome(){
       .reduce((s, p) => s + Number(p.amount), 0);
     $('#hmSales').textContent = 'Cash today ' + peso(cash);
   }else $('#hmSales').textContent = '';
-  $('#hmStaffTile').hidden = ROLE !== 'owner';
+  $('#hmStaffTile').hidden = !nbOwner();
+  /* "Hi, good morning" - by the shop's clock, to whoever is tapped in */
+  const hr = Number(new Date().toLocaleString('en-US', { timeZone:'Asia/Manila', hour:'numeric', hour12:false })) % 24;
+  const greet = hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening';
+  const first = STAFF && STAFF.name ? String(STAFF.name).trim().split(/\s+/)[0] : '';
+  $('#hmHi').textContent = 'Hi' + (first ? ' ' + first : '') + ', ' + greet.toLowerCase() + '!';
   $('#hmProdTile').hidden = !mayPrice();
   if(mayPrice()){
     const items = ITEMS.filter(i => !i.ask_name), open = items.filter(i => i.price_open).length;
@@ -8263,8 +8282,7 @@ function paintNbNav(id){
   const bar = $('#nbNav'); if(!bar) return;
   const show = (k, on) => { bar.querySelector('[data-nb="' + k + '"]').hidden = !on; };
   show('new', canTakeOrders()); show('cust', canTakeOrders());
-  show('prod', mayPrice()); show('lock', !mayPrice() && onRoster().length > 0);
-  const cur = { nvHome:'home', nvBoard:'orders', nvNew:'new', nvCust:'cust', nvProd:'prod' }[id] || '';
+  const cur = { nvHome:'home', nvBoard:'orders', nvNew:'new', nvCust:'cust' }[id] || '';
   bar.querySelectorAll('button').forEach(b => b.setAttribute('aria-current', String(b.dataset.nb === cur)));
 }
 $('#hCalc2').onclick = () => $('#hCalc').click();
@@ -8275,8 +8293,7 @@ $('#nbNav').addEventListener('click', e => {
   else if(k === 'orders'){ BOARD_TAB = 'all'; $('#nvBoard').click(); }
   else if(k === 'new')  $('#nvNew').click();
   else if(k === 'cust') $('#nvCust').click();
-  else if(k === 'prod') $('#nvProd').click();
-  else if(k === 'lock') showPicker();
+  else if(k === 'alerts') $('#hBell').click();
 });
 
 function isLate(o){
@@ -8772,7 +8789,12 @@ $('#npSave').onclick = async () => {
    jsonb answer is saved, null is a wrong PIN with one try burned, a raise is
    everything else. A saved order never changes - jo_items keeps the price it
    was sold at - so the toast says "from the next order". */
-const mayPrice = () => NB() && (STAFF ? (BENCH === 'owner' || BENCH === 'office') : ROLE === 'owner');
+/* The notebook's owner is the PERSON tapped in on the owner bench - not the
+   shop's account, which every phone signs in as (8 Oct: "sales and products
+   settings is only for the owner, the counter take orders"). With no roster
+   nobody is tapped in and the shop's own account is the owner. */
+const nbOwner = () => NB() && (STAFF ? BENCH === 'owner' : ROLE === 'owner');
+const mayPrice = () => nbOwner();
 const priceText = i => i.price_open
   ? 'Quoted each order'
   : peso(i.default_price) + (i.unit && i.unit !== 'pc' ? ' per ' + i.unit : '');
@@ -9082,6 +9104,8 @@ function paintBell(seen, onBoard){
   const n = rows.filter(r => r.at > since).length;
   const badge = $('#hBellN');
   if(badge){ badge.textContent = n > 99 ? '99+' : String(n); badge.hidden = !n; }
+  const nbb = $('#nbAlertN');
+  if(nbb){ nbb.textContent = n > 99 ? '99+' : String(n); nbb.hidden = !n; }
   /* the first paint after opening is the state of the world, not news */
   if(BELL_FIRST){ BELL_FIRST = false; BELL_NEWEST = newest; return; }
   if(newest > BELL_NEWEST){ BELL_NEWEST = newest; bellRing(rows[0]); }
@@ -9137,6 +9161,7 @@ $('#hBell').onclick = () => {
   $('#bellNote').textContent = BELL.length ? '' : 'Nothing is waiting for you right now.';
   if(BELL.length) bellStamp(BELL[0].at);
   $('#hBellN').hidden = true;
+  if($('#nbAlertN')) $('#nbAlertN').hidden = true;
   /* asked once, here, where the person has just shown they want to be told */
   try{ if('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {}); }catch(e){}
   bellDlg.showModal();
