@@ -1790,6 +1790,12 @@
   }
   .nbhi{display:none}
   /* the owner's Today card */
+  .nbfill{display:none}
+  body.nb .nbfill{display:grid;gap:8px;background:#fff;border-radius:22px;padding:16px;margin:0 0 14px;box-shadow:var(--soft);
+    border:2px dashed color-mix(in srgb, var(--acc2) 45%, transparent)}
+  body.nb .nbfill[hidden]{display:none}
+  body.nb .nbfill b{font-size:17px;color:#1E2230}
+  body.nb .nbfill p{margin:0;font-size:14px;color:#5B6273;line-height:1.45}
   .nbtoday{display:none}
   body.nb .nbtoday{display:grid;gap:12px;background:#fff;border-radius:22px;padding:16px 16px 12px;margin:0 0 14px;box-shadow:var(--soft)}
   body.nb .nbtoday[hidden]{display:none}
@@ -2244,6 +2250,14 @@ try{
     <div class="nbhome">
       <div class="nbhi" id="hmHi"></div>
       <div class="nbday" id="hmDay"></div>
+      <!-- 8 Oct, spawn-137: a demo never opens on an empty app ("how to catch
+           the eyes of the user"). Demo shops only, owner only, while empty. -->
+      <section class="nbfill" id="hmFill" hidden>
+        <b>This demo shop is empty</b>
+        <p>Fill it with 10 sample orders - made-up customers, real-looking jobs - so the demo shows what a busy day looks like.</p>
+        <button type="button" class="btn" id="hmFillGo">Fill with sample orders</button>
+        <div class="msg" id="hmFillMsg"></div>
+      </section>
       <!-- 8 Oct, spawn-133: the OWNER's day at a glance, figures first and a
            week of collections under them (Wendell: "in the owner account the
            numbers, bars and line graphs are shown first? best way?"). Drawn
@@ -8628,6 +8642,8 @@ function renderHome(){
   }else $('#hmCust').textContent = 'Customers';
   $('#hmSalesTile').hidden = !nbOwner();
   paintToday();
+  /* the fill card: a demo shop, its owner, nothing in it yet */
+  $('#hmFill').hidden = !(NB() && isDemoShop() && nbOwner() && !ORDERS.length) || FILLING;
   if(canSeeMoney() && DASH_DATA){
     const t = DASH_DATA.t;
     const manila = p => new Date(p.paid_at).toLocaleDateString('en-CA', { timeZone:'Asia/Manila' });
@@ -8691,6 +8707,97 @@ function paintToday(){
   $('#hmWeekK').textContent = week > 0 ? 'Collected in the last 7 days: ' + peso(week) : 'Nothing collected in the last 7 days.';
 }
 $('#hmTodayMore').onclick = () => $('#nvSales').click();
+
+/* ── FILL A DEMO SHOP (spawn-137) ──
+   Ten orders through the same doors the counter uses - jo_create, a
+   jo_payments row, a status move - so nothing here can do what the counter
+   cannot. The products are the shop's own; a product quoted per order gets a
+   sample price on the line. Only ever offered on a shop whose NAME says demo,
+   sandbox or test, to its owner, while it has no orders. */
+var FILLING = false;   // var, not let: renderHome reads it, and a let here would be in its dead zone if Home drew first
+const FILL_CUSTOMERS = [
+  ['Maricel Ablanque', '0917 555 0141'], ['Jun Dela Cruz', '0918 555 0162'], ['Ana Reyes', '0927 555 0173'],
+  ['Barangay Sicayab', '0935 555 0184'], ['Coach Rommel Tan', '0945 555 0195'], ['Liza Mae Gomez', '0956 555 0116'],
+  ['St. Vincent Academy', '0966 555 0127'], ['Kristine Villanueva', '0977 555 0138'], ['Paolo Santos', '0995 555 0149'],
+  ['Dipolog Runners Club', '0908 555 0150']
+];
+/* each: [which customer, lines as [product index, qty], days until due, rush,
+   paid as a share of the total, where it ends up] */
+const FILL_PLAN = [
+  [0, [[0, 1]],          1, true,  0.5, 'new'],
+  [1, [[1, 24]],         3, false, 0,   'new'],
+  [2, [[2, 2], [3, 1]],  0, false, 0.3, 'new'],
+  [3, [[0, 2]],         -2, false, 0.5, 'new'],      // past due
+  [4, [[1, 15]],         2, false, 1,   'new'],
+  [5, [[2, 3]],          0, false, 0.5, 'ready'],
+  [6, [[3, 50]],         1, false, 0,   'ready'],
+  [7, [[0, 1], [2, 1]],  0, false, 1,   'claimed'],
+  [8, [[1, 6]],         -1, false, 1,   'claimed'],
+  [9, [[3, 12]],         0, false, 0.4, 'claimed']   // released, still owes
+];
+const fillDay = n => new Date(Date.parse(today() + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
+function fillPrice(it){
+  if(!it.price_open && Number(it.default_price) > 0) return Number(it.default_price);
+  return it.unit === 'sqft' ? 18 : it.unit === 'meter' ? 350 : it.unit === 'set' ? 650 : 150;
+}
+async function fillDemo(){
+  if(!(NB() && isDemoShop() && nbOwner())) return;
+  try{ assertWritable(); }catch(err){ return toast(err.message); }
+  const prods = ITEMS.filter(i => !i.ask_name);
+  const msg = $('#hmFillMsg');
+  if(!prods.length){ msg.className = 'msg err'; msg.textContent = 'Add a product first - the sample orders use your own products.'; return; }
+  const go = await ask('Add 10 sample orders with made-up customers to ' + SHOP.name + '? They are real orders in this demo shop, ' +
+    'so they show on every phone, in Sales and in Customers.', { head: 'Fill with sample orders', yes: 'Fill it', no: 'Not now' });
+  if(!go) return;
+  FILLING = true; $('#hmFillGo').disabled = true;
+  msg.className = 'msg'; let made = 0, failed = 0;
+  for(const [k, plan] of FILL_PLAN.entries()){
+    msg.textContent = 'Adding sample orders… ' + (k + 1) + ' of ' + FILL_PLAN.length;
+    const [ci, lines, due, rush, paid, end] = plan;
+    try{
+      const rows = lines.map(([pi, q]) => {
+        const it = prods[pi % prods.length];
+        const sq = it.unit === 'sqft';
+        return { id: newId(), group_no: null, item_type: it.name,
+                 size: sq ? '4 × 6 ft · ' + Math.max(1, Math.round(q / 24)) + ' pcs' : null,
+                 qty: sq ? 24 * Math.max(1, Math.round(q / 24)) : q, unit_price: fillPrice(it), gender: null, notes: null };
+      });
+      const total = rows.reduce((t, r) => t + r.qty * r.unit_price, 0);
+      const first = rows[0].item_type + (rows.length > 1 ? ' +' + (rows.length - 1) : '');
+      const { data, error } = await sb.rpc('jo_create', {
+        p_order_id: newId(), p_shop: SHOP.id, p_customer_name: FILL_CUSTOMERS[ci][0], p_lines: rows,
+        p_customer_contact: FILL_CUSTOMERS[ci][1], p_customer_fb: null, p_item_type: first, p_size: null,
+        p_target_date: fillDay(due), p_notes: null, p_rush: rush, p_artist: null, p_order_type: 'walk_in',
+        p_gov_account: null, p_po_number: null, p_taken_by: STAFF ? STAFF.id : null });
+      if(error) throw error;
+      const o = Array.isArray(data) ? data[0] : data;
+      const id = o && o.order_id; if(!id) throw new Error('no order');
+      const amt = Math.round(total * paid);
+      if(amt > 0){
+        const { error: pe } = await sb.from('jo_payments').insert({ shop_id: SHOP.id, job_order_id: id, amount: amt,
+          method: k % 3 === 1 ? 'gcash' : 'cash', receipt_no: 'SAMPLE-' + String(k + 1).padStart(3, '0'),
+          taken_by: STAFF ? STAFF.id : null });
+        if(pe) throw pe;
+      }
+      const now = new Date().toISOString();
+      if(end === 'ready' || end === 'claimed'){
+        const { error: e1 } = await sb.from('job_orders').update({ status: 'ready', ready_at: now, updated_at: now }).eq('id', id);
+        if(e1) throw e1;
+      }
+      if(end === 'claimed'){
+        const { error: e2 } = await sb.from('job_orders').update({ status: 'claimed', claimed_at: now, updated_at: now }).eq('id', id);
+        if(e2) throw e2;
+      }
+      made++;
+    }catch(e){ failed++; }
+  }
+  FILLING = false; $('#hmFillGo').disabled = false;
+  msg.className = failed ? 'msg err' : 'msg ok';
+  msg.textContent = failed ? made + ' sample orders added; ' + failed + ' did not save.' : '';
+  await refresh();
+  toast(made + ' sample orders added');
+}
+$('#hmFillGo').onclick = () => fillDemo();
 $('#hmTiles').addEventListener('click', e => {
   const t = e.target.closest('.ntile'); if(!t) return;
   const go = t.dataset.go;
