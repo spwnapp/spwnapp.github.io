@@ -1790,6 +1790,14 @@
   }
   .nbhi{display:none}
   /* the owner's Today card */
+  .nbsum{display:none}
+  body.nb .nbsum{display:flex;flex-wrap:wrap;align-items:center;gap:6px 0;margin:-6px 2px 14px;font-size:14.5px;font-weight:600;
+    color:#1E2230;font-variant-numeric:tabular-nums}
+  body.nb .nbsum[hidden]{display:none}
+  body.nb .nbsum b{font-weight:800}
+  body.nb .nbsum .k{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--acc-ink);margin-right:8px}
+  body.nb .nbsum .sep{margin:0 8px;color:#B6BBC6}
+  body.nb .nbsum .owe{color:#BE123C}
   .nbfill{display:none}
   body.nb .nbfill{display:grid;gap:8px;background:#fff;border-radius:22px;padding:16px;margin:0 0 14px;box-shadow:var(--soft);
     border:2px dashed color-mix(in srgb, var(--acc2) 45%, transparent)}
@@ -2250,6 +2258,11 @@ try{
     <div class="nbhome">
       <div class="nbhi" id="hmHi"></div>
       <div class="nbday" id="hmDay"></div>
+      <!-- 8 Oct, spawn-138: the day in one line ("Today: 6 orders, P8,150
+           collected, 2 still owe") - for whoever takes orders, so the counter
+           sees the day's orders are saved. Money only for a bench that may
+           see the day's takings. -->
+      <div class="nbsum" id="hmSum" hidden></div>
       <!-- 8 Oct, spawn-137: a demo never opens on an empty app ("how to catch
            the eyes of the user"). Demo shops only, owner only, while empty. -->
       <section class="nbfill" id="hmFill" hidden>
@@ -2263,7 +2276,7 @@ try{
            numbers, bars and line graphs are shown first? best way?"). Drawn
            from what renderSales already read - no query of its own. -->
       <section class="nbtoday" id="hmToday" hidden>
-        <div class="tdh"><span>Today</span><button type="button" class="linky" id="hmTodayMore">See sales &rsaquo;</button></div>
+        <div class="tdh"><span id="hmTodayK">Today</span><button type="button" class="linky" id="hmTodayMore">See sales &rsaquo;</button></div>
         <div class="tdn">
           <div><b id="hmTCash">₱0</b><small>Cash today</small></div>
           <div><b id="hmTSales">₱0</b><small>Sales today</small></div>
@@ -8642,6 +8655,7 @@ function renderHome(){
   }else $('#hmCust').textContent = 'Customers';
   $('#hmSalesTile').hidden = !nbOwner();
   paintToday();
+  paintDaySum(live);
   /* the fill card: a demo shop, its owner, nothing in it yet */
   $('#hmFill').hidden = !(NB() && isDemoShop() && nbOwner() && !ORDERS.length) || FILLING;
   if(canSeeMoney() && DASH_DATA){
@@ -8707,6 +8721,37 @@ function paintToday(){
   $('#hmWeekK').textContent = week > 0 ? 'Collected in the last 7 days: ' + peso(week) : 'Nothing collected in the last 7 days.';
 }
 $('#hmTodayMore').onclick = () => $('#nvSales').click();
+/* "Today: 6 orders · P8,150 collected · 2 still owe". Orders taken today
+   (a just-saved order has no order_date until the next read - the
+   database stamps it - so it counts as today); money that came in today on
+   any order, any method; and how many of TODAY's orders still owe. */
+function paintDaySum(live){
+  const el = $('#hmSum');
+  const on = NB() && canTakeOrders();
+  /* the owner's Today card already shows the money, so for the owner the
+     count rides in the card's own heading instead of a second "Today" above it */
+  const inCard = on && !$('#hmToday').hidden;
+  el.hidden = !on || inCard;
+  if(!on) return;
+  const t = today();
+  const mine = live.filter(o => (o.order_date || t) === t);
+  const owe = mine.filter(o => Number(o.balance) > 0).length;
+  const parts = [mine.length ? '<b>' + mine.length + '</b> ' + (mine.length === 1 ? 'order' : 'orders') : 'No orders yet'];
+  if(canSeeTakings() && DASH_DATA){
+    const got = (DASH_DATA.pays || []).filter(p =>
+      new Date(p.paid_at).toLocaleDateString('en-CA', { timeZone:'Asia/Manila' }) === DASH_DATA.t)
+      .reduce((a, p) => a + Number(p.amount), 0);
+    if(got > 0 || mine.length) parts.push('<b>' + esc(peso(got)) + '</b> collected');
+  }
+  if(owe) parts.push('<span class="owe"><b>' + owe + '</b> still ' + (owe === 1 ? 'owes' : 'owe') + '</span>');
+  if(inCard){
+    const bits = ['Today', mine.length ? mine.length + ' ' + (mine.length === 1 ? 'order' : 'orders') : 'no orders yet'];
+    if(owe) bits.push(owe + ' still ' + (owe === 1 ? 'owes' : 'owe'));
+    $('#hmTodayK').textContent = bits.join(' · ');
+    return;
+  }
+  el.innerHTML = '<span class="k">Today</span>' + parts.join('<span class="sep">·</span>');
+}
 
 /* ── FILL A DEMO SHOP (spawn-137) ──
    Ten orders through the same doors the counter uses - jo_create, a
