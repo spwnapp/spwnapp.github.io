@@ -1351,6 +1351,19 @@
         margin-top:3px;font-variant-numeric:tabular-nums}
   .rccust{font-size:14px;font-weight:600;color:#E2E2DE;margin-top:5px}
   .rcmark{height:38px;width:auto;flex:none}
+  .rcshoplogo{display:none}
+  /* 9 Oct, spawn-139: on Spawn OS the saved-order pop-up is the SHOP's, not
+     Decal Fix's - its colour, its logo (or none), no black hexagons */
+  body.nb #rcptDlg .rchead{background:linear-gradient(135deg,var(--acc1),var(--acc2));background-image:linear-gradient(135deg,var(--acc1),var(--acc2));
+    color:var(--acc-on)}
+  body.nb #rcptDlg .rchead .rck{color:var(--acc-on);opacity:.75}
+  body.nb #rcptDlg .rccust{color:var(--acc-on);opacity:.9}
+  body.nb #rcptDlg .rcmark{display:none}
+  body.nb #rcptDlg .rcshoplogo:not([hidden]){display:block;height:46px;width:46px;object-fit:contain;flex:none;
+    background:#fff;border-radius:12px;padding:4px;box-shadow:0 4px 12px -6px rgba(0,0,0,.35)}
+  body.nb #rcptDlg .rcq{clip-path:none;border-radius:12px;background:linear-gradient(135deg,var(--acc1),var(--acc2));color:var(--acc-on)}
+  body.nb #rcptDlg .rcq small{color:var(--acc-on);opacity:.8}
+  body.nb #rcptDlg #rPrint{background:linear-gradient(135deg,var(--acc1),var(--acc2));color:var(--acc-on);border-color:transparent}
   .rcbody{padding:0 16px 6px;max-height:62vh;overflow:auto}
   .rcmeta{display:grid;grid-template-columns:1fr 1fr;padding:12px 0;border-bottom:1px solid var(--line)}
   .rcmeta>div+div{border-left:1px solid var(--line);padding-left:12px}
@@ -1535,6 +1548,8 @@
   .admlink{display:block;margin:18px auto 0;border:0;background:none;font:inherit;font-size:12px;font-weight:700;
     letter-spacing:.06em;color:var(--grey);cursor:pointer;padding:6px 10px}
   html:not(.spwn) #aAdmin{display:none}
+  .copycode{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:0 0 8px}
+  html:not(.spwn) #dvCopy{display:none}
   .admcode{font-size:30px;font-weight:900;letter-spacing:.12em;text-align:center;padding:16px 8px;margin:8px 0;
     border-radius:16px;background:var(--surface-2);font-variant-numeric:tabular-nums}
   .admlinktext{overflow-wrap:anywhere;color:var(--text-2)}
@@ -2892,6 +2907,7 @@ try{
       <div class="rccust" id="rCust"></div>
     </div>
     <img class="rcmark" src="mark-600.png" alt="Decal Fix">
+    <img class="rcshoplogo" id="rLogo" hidden alt="">
   </div>
   <div class="rcbody">
     <div class="rcmeta">
@@ -3189,8 +3205,9 @@ try{
       <p class="dvfor" id="dvFor"></p>
       <div class="qrbox" id="dvQr" aria-label="QR code to scan"></div>
       <div class="dvcode" id="dvCode"></div>
+      <button type="button" class="btn ghost copycode spwn-only" id="dvCopy" data-copy="#dvCode">Copy the code</button>
       <p class="small muted" style="text-align:center">Scan with the phone's camera - or on the new device open
-        <b class="df-only">decalfix.github.io</b><b class="spwn-only">spwnapp.github.io</b>, tap <b>Set up with a code</b> and type the code.</p>
+        <b class="df-only">decalfix.github.io</b><b class="spwn-only">spwnapp.github.io</b><span class="df-only">, tap <b>Set up with a code</b> and type the code.</span><span class="spwn-only"> and type the code in the code box.</span></p>
       <p class="small muted" style="text-align:center">On an iPhone: add the app to the Home Screen first, then type the code.</p>
       <div class="dvcount" id="dvCount"></div>
     </div>
@@ -3297,6 +3314,7 @@ try{
     <div id="admOut" hidden>
       <p class="small muted" id="admFor" style="margin-top:0"></p>
       <div class="admcode" id="admCode"></div>
+      <button type="button" class="btn ghost copycode" id="admCopy" data-copy="#admCode">Copy the code</button>
       <p class="small admlinktext" id="admLink"></p>
     </div>
     <div class="msg" id="admMsg"></div>
@@ -4666,9 +4684,18 @@ if($('#stSave')) $('#stSave').onclick = async () => {
   await loadRoster(); renderStaff();
 };
 
+/* A phone on the sign-in screen belongs to no shop: forget the last shop's
+   name, logo and background, or the NEXT opening still shows them on the
+   splash - a signed-out phone, or one whose shop is gone, kept opening with
+   the old shop's name (spawn-139, "why is spawn print the opening?"). */
+function forgetShopLook(){
+  try{ brandWrite(null); }catch(e){}
+  document.documentElement.removeAttribute('data-bg');
+}
 async function boot(){
   const { data:{ session } } = await sb.auth.getSession();
   if(!session){ window.__up && window.__up();
+    forgetShopLook();
     $('#auth').hidden = false; $('#app').hidden = true; $('#fab').hidden = true;
                 $('#hCalc').hidden = true;
     if(SETUP_CODE) showSetup(SETUP_CODE);        // opened from a QR or setup link
@@ -4691,7 +4718,10 @@ async function boot(){
     .limit(1);
   if(error || !mine || !mine.length){
     $('#aMsg').className='msg err';
-    $('#aMsg').textContent='This account is not on any shop yet. Sign up with a join code.';
+    $('#aMsg').textContent = document.documentElement.classList.contains('spwn')
+      ? 'This login is not on any shop. Use a code to start a shop or add this phone to one.'
+      : 'This account is not on any shop yet. Sign up with a join code.';
+    forgetShopLook();
     await sb.auth.signOut({ scope: 'local' });
     $('#auth').hidden = false; $('#app').hidden = true;
     return;
@@ -11237,6 +11267,19 @@ function paintReceiptFiles(o, extra){
 /* The receipt a counter sees once the order is saved: the job order as the
    shop recorded it, sizes nested under their item, each item's note. Every
    typed string goes through esc(). */
+/* Copy a code to the clipboard (spawn-139: "add copy button on the code").
+   The words, not the dashes-and-spaces look: XXXXX-XXXXX is kept as shown
+   because the boxes read it either way. Falls back to selecting the text
+   where the clipboard is refused. */
+document.querySelectorAll('.copycode').forEach(b => b.addEventListener('click', async () => {
+  const el = $(b.dataset.copy); const code = (el && el.textContent || '').trim();
+  if(!code || /expired/i.test(code)) return;
+  try{ await navigator.clipboard.writeText(code); toast('Code copied - ' + code); }
+  catch(e){
+    try{ const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); }catch(_){}
+    toast('Select the code and copy it');
+  }
+}));
 const rcptDlg = $('#rcptDlg');
 let RCPT = null;
 const niceDate = d => new Date(d + 'T00:00:00').toLocaleDateString('en-PH',
@@ -11244,6 +11287,10 @@ const niceDate = d => new Date(d + 'T00:00:00').toLocaleDateString('en-PH',
 function showReceipt(o){
   RCPT = o;
   $('#rNo').textContent   = joRef(o);
+  /* the shop's own logo on the pop-up, Spawn OS only (CSS hides Decal Fix's) */
+  const rl = $('#rLogo'), lok = NB() && LOGO_RE.test(LOGO || '');
+  rl.hidden = !lok;
+  if(lok){ rl.src = LOGO; rl.alt = SHOP.name + ' logo'; } else rl.removeAttribute('src');
   $('#rCust').textContent = o.customer_name + (o.customer_contact ? ' · ' + o.customer_contact : '') +
                             (o.customer_fb ? ' · FB ' + o.customer_fb : '');
   $('#rDate').textContent = o.target_date ? niceDate(o.target_date) : '—';
