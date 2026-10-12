@@ -1820,6 +1820,72 @@
   body.nb .nbfill[hidden]{display:none}
   body.nb .nbfill b{font-size:17px;color:#1E2230}
   body.nb .nbfill p{margin:0;font-size:14px;color:#5B6273;line-height:1.45}
+  /* ── spawn-141: stories and swipe mode ── */
+  .stories{display:none}
+  body.nb .stories:not([hidden]){display:flex;gap:8px;overflow-x:auto;margin:0 -2px 14px;padding:2px 2px 4px;scrollbar-width:none}
+  body.nb .stories::-webkit-scrollbar{display:none}
+  body.nb .story{flex:none;display:grid;justify-items:center;gap:5px;width:60px;padding:0;border:0;background:none;
+    font:inherit;cursor:pointer;color:#1E2230}
+  body.nb .story .ring{position:relative;width:56px;height:56px;border-radius:50%;padding:3px;background:#D9DCE4;display:grid}
+  body.nb .story.has .ring{background:conic-gradient(from 200deg,var(--sc1),var(--sc2),var(--sc1))}
+  body.nb .story .face{border-radius:50%;background:#fff;display:grid;place-items:center;border:2px solid #fff;
+    font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--sc2,#1E2230)}
+  body.nb .story:not(.has) .face{color:#9AA0AE}
+  body.nb .story .lbl{font-size:12px;font-weight:700;line-height:1.15;text-align:center;color:#3A4050}
+  body.nb .story:focus-visible .ring{outline:3px solid #1E2230;outline-offset:2px}
+  body.nb .story.s-queue{--sc1:var(--acc1);--sc2:var(--acc2)}
+  body.nb .story.s-late{--sc1:#FB7185;--sc2:#E11D48}
+  body.nb .story.s-today{--sc1:#FCD34D;--sc2:#D97706}
+  body.nb .story.s-ready{--sc1:#86EFAC;--sc2:#16A34A}
+  body.nb .story.s-owes{--sc1:#F9A8D4;--sc2:#BE185D}
+  #swipe .swfoot .btn.ghost{background:rgba(255,255,255,.14);color:#fff;box-shadow:none;border-color:transparent}
+  #swipe .swfoot .btn.ghost:disabled{opacity:.35}
+  #swipe{position:fixed;inset:0;z-index:60;display:grid;grid-template-rows:auto auto 1fr auto auto;
+    background:radial-gradient(60rem 40rem at 50% -10%, color-mix(in srgb, var(--acc1,#FFD25C) 35%, #12141B), #12141B 70%);
+    color:#fff;padding:env(safe-area-inset-top,0px) 0 calc(env(safe-area-inset-bottom,0px) + 10px);touch-action:none}
+  #swipe[hidden]{display:none}
+  .swhead{display:flex;align-items:center;gap:12px;padding:12px 16px 8px}
+  .swx{width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:26px;line-height:1;cursor:pointer}
+  .swt{display:grid;min-width:0}
+  .swt b{font-size:17px;font-weight:800}
+  .swt span{font-size:13px;opacity:.75;font-variant-numeric:tabular-nums}
+  .swbar{height:4px;margin:0 16px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden}
+  .swbar i{display:block;height:100%;width:0;background:#fff;border-radius:2px;transition:width .3s ease}
+  .swstage{position:relative;margin:14px 16px 10px;min-height:0}
+  .swcard{position:absolute;inset:0;background:#fff;color:#1E2230;border-radius:26px;padding:20px 20px 18px;overflow:auto;
+    display:grid;align-content:start;gap:12px;box-shadow:0 30px 60px -25px rgba(0,0,0,.6);border-left:8px solid var(--st,#9A9A95);
+    transition:transform .28s cubic-bezier(.2,.8,.2,1), opacity .28s ease;will-change:transform;user-select:none;-webkit-user-select:none}
+  .swcard.drag{transition:none}
+  .swcard.st-new{--st:var(--st-new,#9A9A95)}
+  .swcard.st-ready{--st:var(--st-ready,#4ADE80)}
+  .swcard.st-claimed{--st:var(--st-claimed,#0C6647)}
+  .swcard.late{--st:#E11D48}
+  .swcard .swjo{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .swcard .swjo b{font-size:15px;font-weight:800;color:#5B6273;letter-spacing:.02em}
+  .swcard .swcust{font-size:28px;font-weight:800;line-height:1.1;letter-spacing:-.02em;overflow-wrap:anywhere}
+  .swcard .swph{font-size:15px;color:#5B6273;font-weight:600}
+  .swcard .swdue{font-size:16px;font-weight:700}
+  .swcard.late .swdue{color:#E11D48}
+  .swcard .switems{display:grid;gap:6px;border-top:1px solid #EEF0F4;padding-top:12px}
+  .swcard .switem{display:flex;justify-content:space-between;gap:10px;font-size:16px;font-weight:600}
+  .swcard .switem span:first-child{min-width:0;overflow-wrap:anywhere}
+  .swcard .switem span:last-child{white-space:nowrap;color:#5B6273;font-variant-numeric:tabular-nums}
+  .swcard .swmoney{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid #EEF0F4;padding-top:12px}
+  .swcard .swmoney b{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+  .swcard .swmoney b.owe{color:#E11D48}
+  .swcard .swmoney b.paid{color:#16A34A}
+  .swcard .swstamp{position:absolute;top:22px;right:18px;padding:6px 12px;border:3px solid #16A34A;color:#16A34A;border-radius:10px;
+    font-size:20px;font-weight:900;letter-spacing:.06em;transform:rotate(12deg);opacity:0;pointer-events:none}
+  .swcard.done{text-align:center;justify-items:center;align-content:center;gap:10px;border-left-color:var(--acc2)}
+  .swcard.done .big{font-size:56px;line-height:1}
+  .swcard.done b{font-size:24px}
+  .swfoot{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:8px;padding:0 16px}
+  .swfoot .btn{height:52px;font-size:15px}
+  .swfoot .btn.ghost{background:rgba(255,255,255,.12);color:#fff;box-shadow:none}
+  .swfoot .btn:disabled{opacity:.35}
+  .swhint{margin:8px 16px 0;text-align:center;font-size:12.5px;opacity:.7}
+  @media (prefers-reduced-motion:reduce){ .swcard{transition:none} }
+  @media (min-width:700px){ .swstage,.swfoot,.swhint,.swhead,.swbar{width:min(520px,100%);margin-left:auto;margin-right:auto} .swfoot{padding:0} }
   /* spawn-140: the work feels alive - press in, and real wins celebrated */
   body.nb .btn,body.nb .ntile,body.nb .nbnav button,body.nb .prrow,body.nb .jo{transition:transform .09s ease, box-shadow .12s ease}
   body.nb .btn:active,body.nb .ntile:active,body.nb .nbnav button:active,body.nb .prrow:active,body.nb .jo:active{transform:scale(.96)}
@@ -2315,6 +2381,9 @@ try{
            sees the day's orders are saved. Money only for a bench that may
            see the day's takings. -->
       <div class="nbsum" id="hmSum" hidden></div>
+      <!-- spawn-141: the day's work as stories, first thing under the greeting
+           the way Facebook puts them - tap one to swipe through it -->
+      <div class="stories" id="hmStories" hidden></div>
       <!-- 8 Oct, spawn-137: a demo never opens on an empty app ("how to catch
            the eyes of the user"). Demo shops only, owner only, while empty. -->
       <section class="nbfill" id="hmFill" hidden>
@@ -2943,6 +3012,22 @@ try{
 <!-- order detail -->
 <!-- Shown once a job order saves. Nothing prints by itself: the only printout
      is the claim stub, and only from its button. -->
+<!-- spawn-141: SWIPE MODE - one order per screen, like Reels. Up = next,
+     down = back, right = the next move (Mark ready / Release), tap = open. -->
+<section id="swipe" hidden aria-label="Work through the orders">
+  <div class="swhead">
+    <button type="button" class="swx" id="swClose" aria-label="Close">&times;</button>
+    <div class="swt"><b id="swTitle">Today's queue</b><span id="swCount"></span></div>
+  </div>
+  <div class="swbar"><i id="swFill"></i></div>
+  <div class="swstage" id="swStage"></div>
+  <div class="swfoot" id="swFoot">
+    <button type="button" class="btn ghost" id="swPrev" aria-label="Previous order">&uarr; Back</button>
+    <button type="button" class="btn" id="swAct">Mark ready</button>
+    <button type="button" class="btn ghost" id="swNext" aria-label="Next order">Next &darr;</button>
+  </div>
+  <p class="swhint" id="swHint">Swipe up for the next one &middot; swipe right to move it on &middot; tap to open</p>
+</section>
 <!-- spawn-140: a real win gets a moment. A popover, so it sits above any open
      dialog (the receipt, the order) - an ordinary overlay cannot. -->
 <div id="cele" popover="manual" aria-live="polite">
@@ -8741,6 +8826,7 @@ function renderHome(){
   $('#hmSalesTile').hidden = !nbOwner();
   paintToday();
   paintDaySum(live);
+  paintStories();
   /* the fill card: a demo shop, its owner, nothing in it yet */
   $('#hmFill').hidden = !(NB() && isDemoShop() && nbOwner() && !ORDERS.length) || FILLING;
   if(canSeeMoney() && DASH_DATA){
@@ -8886,6 +8972,173 @@ $('#acSound').onclick = () => {
   paintSoundBtn();
   if(soundOn()) chime();
 };
+
+/* ── SPAWN-141: STORIES AND SWIPE MODE (Phase 2-3 of the "like Reels" plan) ──
+   The day's work as a stack of full-screen cards: one order at a time,
+   swipe up for the next, swipe right to move it on (Mark ready, then
+   Release), tap to open it. The move runs the order dialog's OWN Move-on
+   handler with CUR set, so every rule, question and celebration is the one
+   the dialog has - nothing is checked twice or differently. It ENDS: the
+   last card says all caught up. Counter, office and owner, Spawn OS only. */
+const SW_SETS = {
+  queue: { name: 'Queue',     title: "Today's queue", pick: o => o.status !== 'claimed' },
+  late:  { name: 'Late',      title: 'Late',          pick: o => isLate(o) },
+  today: { name: 'Due today', title: 'Due today',     pick: o => o.status !== 'claimed' && o.target_date === today() },
+  ready: { name: 'Ready',     title: 'Ready to claim', pick: o => o.status === 'ready' },
+  owes:  { name: 'Owes',      title: 'Still owe',     pick: o => o.status !== 'cancelled' && Number(o.balance) > 0 }
+};
+const swRank = o => isLate(o) ? 0 : o.target_date === today() ? 1 : o.status === 'ready' ? 2 : 3;
+function swList(key){
+  const live = ORDERS.filter(o => !o.voided && o.status !== 'cancelled');
+  return live.filter(SW_SETS[key].pick).sort((a, b) => swRank(a) - swRank(b) ||
+    String(a.target_date || '9999').localeCompare(String(b.target_date || '9999')) || (a.jo_no - b.jo_no));
+}
+function paintStories(){
+  const box = $('#hmStories'); if(!box) return;
+  const on = NB() && canTakeOrders();
+  box.hidden = !on;
+  if(!on) return;
+  box.innerHTML = '';
+  Object.entries(SW_SETS).forEach(([k, set]) => {
+    const n = swList(k).length;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'story s-' + k + (n ? ' has' : ''); b.dataset.set = k;
+    b.setAttribute('aria-label', set.name + ': ' + n);
+    b.innerHTML = '<span class="ring"><span class="face">' + n + '</span></span><span class="lbl">' + esc(set.name) + '</span>';
+    b.onclick = () => n ? openSwipe(k) : toast('Nothing in ' + set.name.toLowerCase() + ' right now');
+    box.appendChild(b);
+  });
+}
+let SW = null;     // { key, ids, i }
+function openSwipe(key){
+  const ids = swList(key).map(o => o.id);
+  SW = { key, ids, i: 0 };
+  $('#swTitle').textContent = SW_SETS[key].title;
+  $('#swipe').hidden = false;
+  document.body.style.overflow = 'hidden';
+  paintSwipe();
+}
+function closeSwipe(){
+  $('#swipe').hidden = true; document.body.style.overflow = ''; SW = null;
+  if(NB() && !$('#vHome').hidden) renderHome();
+}
+const swOrder = () => SW && ORDERS.find(o => o.id === SW.ids[SW.i]);
+const swMove = o => { const nx = o && FLOW[FLOW.indexOf(o.status) + 1]; return nx || null; };
+const SW_ACT = { ready: 'Mark ready', claimed: 'Release' };
+function paintSwipe(dir){
+  if(!SW) return;
+  const stage = $('#swStage'), total = SW.ids.length, done = SW.i >= total;
+  $('#swCount').textContent = done ? total + ' of ' + total : (SW.i + 1) + ' of ' + total;
+  $('#swFill').style.width = Math.round(Math.min(SW.i, total) / Math.max(1, total) * 100) + '%';
+  const card = document.createElement('article');
+  if(done){
+    card.className = 'swcard done';
+    card.innerHTML = '<div class="big">\u{1F389}</div><b>All caught up!</b><span class="swph">' +
+      esc(total + ' ' + (total === 1 ? 'order' : 'orders') + ' gone through') + '</span>';
+    $('#swAct').textContent = 'Done'; $('#swAct').disabled = false;
+    $('#swNext').disabled = true; $('#swPrev').disabled = total === 0;
+  }else{
+    const o = swOrder();
+    if(!o){ SW.ids.splice(SW.i, 1); return paintSwipe(dir); }
+    const late = isLate(o), nx = swMove(o);
+    card.className = 'swcard st-' + o.status + (late ? ' late' : '');
+    const lines = (o.jo_items && o.jo_items.length ? o.jo_items : [{ item_type: o.item_type, qty: o.qty, size: o.size }]);
+    const items = lines.slice(0, 6).map(l => '<div class="switem"><span>' + esc(l.item_type || 'Item') +
+      (l.size ? ' · ' + esc(l.size) : '') + '</span><span>&times; ' + esc(String(Number(l.qty) || 1)) + '</span></div>').join('') +
+      (lines.length > 6 ? '<div class="swph">+ ' + (lines.length - 6) + ' more</div>' : '');
+    const due = o.target_date ? (late ? 'Late - was due ' : 'Due ') + niceDate(o.target_date) : 'No due date';
+    const bal = Number(o.balance) || 0;
+    const money = canTakeOrders() ? '<div class="swmoney"><span class="swph">' + (bal > 0 ? 'Still owes' : 'Paid in full') + '</span>' +
+      '<b class="' + (bal > 0 ? 'owe' : 'paid') + '">' + esc(peso(bal > 0 ? bal : o.total)) + '</b></div>' : '';
+    card.innerHTML = '<span class="swstamp">' + esc((SW_ACT[nx] || '').toUpperCase()) + '</span>' +
+      '<div class="swjo"><b>JO ' + esc(String(o.jo_no)) + '</b>' + (o.rush ? '<span class="chip rush">Rush</span>' : '') +
+      '<span class="chip ' + esc(o.status) + '">' + esc(LABEL[o.status] || o.status) + '</span></div>' +
+      '<div class="swcust">' + esc(o.customer_name || '') + '</div>' +
+      (o.customer_contact ? '<div class="swph">' + esc(o.customer_contact) + '</div>' : '') +
+      '<div class="swdue">' + esc(due) + '</div>' +
+      '<div class="switems">' + items + '</div>' + money;
+    $('#swAct').textContent = SW_ACT[nx] || 'Open';
+    $('#swAct').disabled = false;
+    $('#swNext').disabled = false; $('#swPrev').disabled = SW.i === 0;
+    swGestures(card);
+  }
+  const old = stage.querySelector('.swcard');
+  if(old && dir){
+    const off = { up: 'translateY(-110%)', down: 'translateY(110%)', right: 'translateX(130%) rotate(14deg)' }[dir];
+    old.style.transform = off; old.style.opacity = '0';
+    setTimeout(() => old.remove(), 300);
+    card.style.transform = dir === 'down' ? 'translateY(-30px) scale(.96)' : 'translateY(30px) scale(.96)'; card.style.opacity = '0';
+    stage.appendChild(card);
+    requestAnimationFrame(() => requestAnimationFrame(() => { card.style.transform = ''; card.style.opacity = ''; }));
+  }else{
+    stage.innerHTML = ''; stage.appendChild(card);
+  }
+}
+function swGo(step){
+  if(!SW) return;
+  const to = Math.max(0, Math.min(SW.ids.length, SW.i + step));
+  if(to === SW.i) return;
+  SW.i = to; buzz(8);
+  paintSwipe(step > 0 ? 'up' : 'down');
+}
+async function swAct(){
+  if(!SW) return;
+  if(SW.i >= SW.ids.length) return closeSwipe();
+  const o = swOrder(); if(!o) return;
+  const nx = swMove(o);
+  if(!nx || !canTakeOrders()){ openDetail(o); return; }
+  const before = o.status;
+  CUR = o;
+  await $('#dNext').onclick();                 // the dialog's own move: same rules, same questions
+  const { data } = await sb.from('job_orders').select('status').eq('id', o.id).limit(1);
+  const after = data && data[0] && data[0].status;
+  if(after && after !== before){
+    o.status = after;
+    const stamp = $('#swStage .swcard .swstamp'); if(stamp) stamp.style.opacity = '1';
+    SW.i++;
+    setTimeout(() => paintSwipe('right'), 180);
+  }else paintSwipe();                           // backed out of a question: stay on this one
+}
+function swGestures(card){
+  let x0 = 0, y0 = 0, dx = 0, dy = 0, down = false, moved = false;
+  card.addEventListener('pointerdown', e => { down = true; moved = false; x0 = e.clientX; y0 = e.clientY; dx = dy = 0;
+    card.classList.add('drag'); try{ card.setPointerCapture(e.pointerId); }catch(_){} });
+  card.addEventListener('pointermove', e => {
+    if(!down) return;
+    dx = e.clientX - x0; dy = e.clientY - y0;
+    if(Math.abs(dx) > 6 || Math.abs(dy) > 6) moved = true;
+    if(Math.abs(dx) > Math.abs(dy)){
+      const r = Math.max(0, dx);
+      card.style.transform = 'translateX(' + r + 'px) rotate(' + (r / 30) + 'deg)';
+      const st = card.querySelector('.swstamp'); if(st) st.style.opacity = String(Math.min(1, r / 120));
+    }else card.style.transform = 'translateY(' + dy + 'px)';
+  });
+  const up = () => {
+    if(!down) return; down = false; card.classList.remove('drag');
+    if(!moved){ card.style.transform = ''; const o = swOrder(); if(o) openDetail(o); return; }
+    if(Math.abs(dx) > Math.abs(dy) && dx > 90){ card.style.transform = ''; swAct(); return; }
+    if(Math.abs(dy) >= Math.abs(dx) && dy < -70) return swGo(1);
+    if(Math.abs(dy) >= Math.abs(dx) && dy > 70) return swGo(-1);
+    card.style.transform = '';
+    const st = card.querySelector('.swstamp'); if(st) st.style.opacity = '0';
+  };
+  card.addEventListener('pointerup', up);
+  card.addEventListener('pointercancel', () => { down = false; card.classList.remove('drag'); card.style.transform = ''; });
+}
+$('#swClose').onclick = () => closeSwipe();
+$('#swNext').onclick = () => swGo(1);
+$('#swPrev').onclick = () => swGo(-1);
+$('#swAct').onclick = () => swAct();
+document.addEventListener('keydown', e => {
+  if($('#swipe').hidden || document.querySelector('dialog[open]')) return;
+  if(e.key === 'ArrowDown' || e.key === 'ArrowRight' && e.shiftKey) swGo(1);
+  else if(e.key === 'ArrowUp') swGo(-1);
+  else if(e.key === 'Enter') swAct();
+  else if(e.key === 'Escape') closeSwipe();
+  else return;
+  e.preventDefault();
+});
+window.__openSwipe = k => openSwipe(k);    // for the suites
 
 /* ── the day's goal (nb22d shops.daily_goal) ──
    Read in its own query on Spawn OS only (Decal Fix's database has no such
@@ -12178,6 +12431,7 @@ resetIdle();
 function backStep(){
   const open = [...document.querySelectorAll('dialog')].filter(d => d.open);
   if(open.length){ open[open.length - 1].close(); return true; }
+  if(!$('#swipe').hidden){ closeSwipe(); return true; }     // swipe mode closes before anything else
   if($('#lock') && !$('#lock').hidden) return false;   // locked: let it close
   const here = Object.keys(views).find(k => $('#'+k).getAttribute('aria-selected') === 'true');
   /* **The tabs you actually visited, newest first** - asked for 24 Sep:
