@@ -1820,6 +1820,20 @@
   body.nb .nbfill[hidden]{display:none}
   body.nb .nbfill b{font-size:17px;color:#1E2230}
   body.nb .nbfill p{margin:0;font-size:14px;color:#5B6273;line-height:1.45}
+  /* ── spawn-143: the Today card as a carousel ── */
+  body.nb #hmToday{gap:8px;padding:14px 0 10px}
+  body.nb .tdcar{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch}
+  body.nb .tdcar::-webkit-scrollbar{display:none}
+  body.nb .tds{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;display:grid;align-content:start;gap:12px;
+    padding:2px 16px;box-sizing:border-box;cursor:pointer;min-height:132px}
+  body.nb #hmToday .tdchart{border-top:0;padding-top:0}
+  body.nb .tddots{display:flex;justify-content:center;gap:7px;padding-top:2px}
+  body.nb .tddots button{width:8px;height:8px;padding:0;border:0;border-radius:4px;background:#D9DCE4;cursor:pointer;
+    transition:width .2s ease, background .2s ease}
+  body.nb .tddots button[aria-selected="true"]{width:22px;background:var(--acc2)}
+  body.nb .tddots button:focus-visible{outline:2px solid #1E2230;outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){ body.nb .tddots button{transition:none} }
   /* ── spawn-141: stories and swipe mode ── */
   .qchips{display:none}
   body.nb .qchips:not([hidden]){display:grid;gap:8px;margin:0 0 12px}
@@ -2413,21 +2427,38 @@ try{
            week of collections under them (Wendell: "in the owner account the
            numbers, bars and line graphs are shown first? best way?"). Drawn
            from what renderSales already read - no query of its own. -->
+      <!-- spawn-143: the Today card is three small cards you swipe sideways -
+           Today, the goal, the last 7 days (Wendell: "make this swipeable then
+           only when clicked the features open"). Tap a card to open it. -->
       <section class="nbtoday" id="hmToday" hidden>
-        <div class="tdh"><div class="tdk2"><span id="hmTodayK">Today</span><small id="hmTodaySub"></small></div><button type="button" class="linky" id="hmTodayMore">See sales &rsaquo;</button></div>
-        <!-- spawn-140: the day's goal, filling as sales come in -->
-        <div class="tdgoal" id="hmGoal" hidden>
-          <svg viewBox="0 0 44 44" aria-hidden="true"><circle class="trk" cx="22" cy="22" r="18"/><circle class="arc" id="hmGoalArc" cx="22" cy="22" r="18"/></svg>
-          <div class="tgt"><b id="hmGoalPct">0%</b><span id="hmGoalTxt"></span></div>
-          <button type="button" class="linky" id="hmGoalSet">Set goal</button>
+        <div class="tdcar" id="hmCar">
+          <div class="tds" data-slide="0" data-open="sales" role="group" aria-label="Today">
+            <div class="tdh"><div class="tdk2"><span id="hmTodayK">Today</span><small id="hmTodaySub"></small></div><button type="button" class="linky" id="hmTodayMore">See sales &rsaquo;</button></div>
+            <div class="tdn">
+              <div><b id="hmTCash">₱0</b><small>Cash today</small></div>
+              <div><b id="hmTSales">₱0</b><small>Sales today</small></div>
+              <div><b id="hmTOwed">₱0</b><small>Still owed</small></div>
+            </div>
+          </div>
+          <div class="tds" data-slide="1" data-open="goal" role="group" aria-label="Daily goal">
+            <div class="tdh"><div class="tdk2"><span>Daily goal</span><small>Sales today against your goal</small></div></div>
+            <!-- spawn-140: the day's goal, filling as sales come in -->
+            <div class="tdgoal" id="hmGoal" hidden>
+              <svg viewBox="0 0 44 44" aria-hidden="true"><circle class="trk" cx="22" cy="22" r="18"/><circle class="arc" id="hmGoalArc" cx="22" cy="22" r="18"/></svg>
+              <div class="tgt"><b id="hmGoalPct">0%</b><span id="hmGoalTxt"></span></div>
+              <button type="button" class="linky" id="hmGoalSet">Set goal</button>
+            </div>
+          </div>
+          <div class="tds" data-slide="2" data-open="sales" role="group" aria-label="Last 7 days">
+            <div class="tdh"><div class="tdk2"><span>Last 7 days</span><small id="hmWeekK"></small></div></div>
+            <div class="tdchart" id="hmWeek"></div>
+          </div>
         </div>
-        <div class="tdn">
-          <div><b id="hmTCash">₱0</b><small>Cash today</small></div>
-          <div><b id="hmTSales">₱0</b><small>Sales today</small></div>
-          <div><b id="hmTOwed">₱0</b><small>Still owed</small></div>
+        <div class="tddots" id="hmDots" role="tablist" aria-label="Cards">
+          <button type="button" data-i="0" aria-label="Today" aria-selected="true"></button>
+          <button type="button" data-i="1" aria-label="Daily goal" aria-selected="false"></button>
+          <button type="button" data-i="2" aria-label="Last 7 days" aria-selected="false"></button>
         </div>
-        <div class="tdchart" id="hmWeek"></div>
-        <div class="tdk" id="hmWeekK"></div>
       </section>
       <div class="tiles" id="hmTiles">
         <button type="button" class="ntile wide t-new" data-go="new">
@@ -8917,6 +8948,30 @@ function paintToday(){
   $('#hmWeekK').textContent = week > 0 ? 'Collected in the last 7 days: ' + peso(week) : 'Nothing collected in the last 7 days.';
 }
 $('#hmTodayMore').onclick = () => $('#nvSales').click();
+/* ── spawn-143: the Today carousel ──
+   Native sideways scrolling with snap, so a thumb, a trackpad and a mouse
+   wheel all work and nothing fights the page's own scrolling. The dots say
+   which card is showing and jump to one. A tap on a card opens what it is
+   about; a button inside a card (Set goal, See sales) does its own thing. */
+const carSlide = () => { const c = $('#hmCar'); return c ? Math.round(c.scrollLeft / Math.max(1, c.clientWidth)) : 0; };
+function paintDots(){
+  const i = carSlide();
+  document.querySelectorAll('#hmDots button').forEach(b => b.setAttribute('aria-selected', String(Number(b.dataset.i) === i)));
+}
+let CAR_T = 0;
+$('#hmCar').addEventListener('scroll', () => { clearTimeout(CAR_T); CAR_T = setTimeout(paintDots, 60); }, { passive: true });
+$('#hmDots').addEventListener('click', e => {
+  const b = e.target.closest('button[data-i]'); if(!b) return;
+  const c = $('#hmCar'); c.scrollTo({ left: Number(b.dataset.i) * c.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  setTimeout(paintDots, 350);
+});
+$('#hmCar').addEventListener('click', e => {
+  if(e.target.closest('button, a')) return;
+  const slide = e.target.closest('.tds'); if(!slide) return;
+  if(slide.dataset.open === 'goal'){ if(!SHOP_GOAL) return $('#hmGoalSet').click(); }
+  $('#nvSales').click();
+});
+window.__carSlide = () => carSlide();
 
 /* ── SPAWN-140: IT FEELS ALIVE ──
    Wendell: "make everything so easy that they will be addicted ... like
