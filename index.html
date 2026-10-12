@@ -1821,6 +1821,16 @@
   body.nb .nbfill b{font-size:17px;color:#1E2230}
   body.nb .nbfill p{margin:0;font-size:14px;color:#5B6273;line-height:1.45}
   /* ── spawn-141: stories and swipe mode ── */
+  .qchips{display:none}
+  body.nb .qchips:not([hidden]){display:grid;gap:8px;margin:0 0 12px}
+  body.nb .qrow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px}
+  body.nb .qrow::-webkit-scrollbar{display:none}
+  body.nb .qrow:empty{display:none}
+  body.nb .qrow .k{flex:none;align-self:center;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#5B6273;margin-right:2px}
+  body.nb .qchip{flex:none;border:0;border-radius:999px;padding:9px 14px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;
+    background:#fff;color:#1E2230;box-shadow:var(--soft);white-space:nowrap}
+  body.nb .qchip.p{background:color-mix(in srgb, var(--acc1) 22%, #fff)}
+  body.nb .qchip:active{transform:scale(.95)}
   .stories{display:none}
   body.nb .stories:not([hidden]){display:flex;gap:8px;overflow-x:auto;margin:0 -2px 14px;padding:2px 2px 4px;scrollbar-width:none}
   body.nb .stories::-webkit-scrollbar{display:none}
@@ -1834,6 +1844,7 @@
   body.nb .story .lbl{font-size:12px;font-weight:700;line-height:1.15;text-align:center;color:#3A4050}
   body.nb .story:focus-visible .ring{outline:3px solid #1E2230;outline-offset:2px}
   body.nb .story.s-queue{--sc1:var(--acc1);--sc2:var(--acc2)}
+  body.nb .story.s-week{--sc1:#A78BFA;--sc2:#6D28D9}
   body.nb .story.s-late{--sc1:#FB7185;--sc2:#E11D48}
   body.nb .story.s-today{--sc1:#FCD34D;--sc2:#D97706}
   body.nb .story.s-ready{--sc1:#86EFAC;--sc2:#16A34A}
@@ -1876,10 +1887,16 @@
   .swcard .swmoney b.paid{color:#16A34A}
   .swcard .swstamp{position:absolute;top:22px;right:18px;padding:6px 12px;border:3px solid #16A34A;color:#16A34A;border-radius:10px;
     font-size:20px;font-weight:900;letter-spacing:.06em;transform:rotate(12deg);opacity:0;pointer-events:none}
+  .swcard.story-card{text-align:center;justify-items:center;align-content:center;gap:10px;border-left-color:var(--acc2)}
+  .swcard.story-card.late{border-left-color:#E11D48}
+  .swcard.story-card .big{font-size:52px;line-height:1}
+  .swcard.story-card .swcust{font-size:34px}
   .swcard.done{text-align:center;justify-items:center;align-content:center;gap:10px;border-left-color:var(--acc2)}
   .swcard.done .big{font-size:56px;line-height:1}
   .swcard.done b{font-size:24px}
   .swfoot{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:8px;padding:0 16px}
+  .swfoot:has(#swNext[hidden]){grid-template-columns:1fr 2fr}
+  #swipe .swfoot .btn[hidden]{display:none}
   .swfoot .btn{height:52px;font-size:15px}
   .swfoot .btn.ghost{background:rgba(255,255,255,.12);color:#fff;box-shadow:none}
   .swfoot .btn:disabled{opacity:.35}
@@ -2465,6 +2482,12 @@ try{
 
   <!-- new order -->
   <section class="view" id="vNew" hidden>
+    <!-- spawn-142: a common order in three or four taps - the last customers
+         and the products this shop sells most, one tap each. Spawn OS only. -->
+    <div class="qchips" id="fQuick" hidden>
+      <div class="qrow" id="fQCust"></div>
+      <div class="qrow" id="fQProd"></div>
+    </div>
     <div class="card">
       <div class="grid2">
         <label class="wide">Customer
@@ -5025,6 +5048,7 @@ async function loadItems(){
 
 /* ── new order ── */
 function newOrder(){
+  setTimeout(paintQuick, 0);
   LINES = [];
   $('#fCust').value=''; $('#fPhone').value=''; $('#fFb').value=''; $('#fNotes').value=''; $('#fDown').value='';
   if($('#fHint')){ $('#fHint').hidden = true; $('#fSug').hidden = true; }
@@ -8999,6 +9023,13 @@ function paintStories(){
   box.hidden = !on;
   if(!on) return;
   box.innerHTML = '';
+  if(nbOwner()){
+    const w = document.createElement('button');
+    w.type = 'button'; w.className = 'story s-week has'; w.dataset.set = 'week'; w.setAttribute('aria-label', 'Last week');
+    w.innerHTML = '<span class="ring"><span class="face">\u{1F4C8}</span></span><span class="lbl">Last week</span>';
+    w.onclick = () => openWeek();
+    box.appendChild(w);
+  }
   Object.entries(SW_SETS).forEach(([k, set]) => {
     const n = swList(k).length;
     const b = document.createElement('button');
@@ -9027,6 +9058,9 @@ const swMove = o => { const nx = o && FLOW[FLOW.indexOf(o.status) + 1]; return n
 const SW_ACT = { ready: 'Mark ready', claimed: 'Release' };
 function paintSwipe(dir){
   if(!SW) return;
+  if(SW.cards) return paintStoryCard(dir);
+  $('#swNext').hidden = false;
+  $('#swHint').textContent = 'Swipe up for the next one · swipe right to move it on · tap to open';
   const stage = $('#swStage'), total = SW.ids.length, done = SW.i >= total;
   $('#swCount').textContent = done ? total + ' of ' + total : (SW.i + 1) + ' of ' + total;
   $('#swFill').style.width = Math.round(Math.min(SW.i, total) / Math.max(1, total) * 100) + '%';
@@ -9074,15 +9108,41 @@ function paintSwipe(dir){
     stage.innerHTML = ''; stage.appendChild(card);
   }
 }
+function paintStoryCard(dir){
+  const stage = $('#swStage'), total = SW.cards.length, done = SW.i >= total;
+  $('#swCount').textContent = (Math.min(SW.i + 1, total)) + ' of ' + total;
+  $('#swFill').style.width = Math.round(Math.min(SW.i + 1, total) / total * 100) + '%';
+  const card = document.createElement('article');
+  if(done){
+    card.className = 'swcard done';
+    card.innerHTML = '<div class="big">\u{1F64C}</div><b>Have a great week!</b><span class="swph">See you next Monday</span>';
+    $('#swAct').textContent = 'Done';
+  }else{
+    const c = SW.cards[SW.i];
+    card.className = 'swcard story-card' + (c.good ? '' : ' late');
+    card.innerHTML = '<div class="big">' + c.icon + '</div><span class="swph">' + esc(c.k) + '</span>' +
+      '<div class="swcust">' + esc(c.big) + '</div><div class="swdue">' + esc(c.sub || '') + '</div>';
+    $('#swAct').textContent = 'Next';
+  }
+  $('#swAct').disabled = false; $('#swNext').hidden = true; $('#swPrev').disabled = SW.i === 0;
+  $('#swHint').textContent = 'Swipe up or tap for the next one';
+  swGestures(card);
+  const old = stage.querySelector('.swcard');
+  if(old && dir){ old.style.transform = dir === 'down' ? 'translateY(110%)' : 'translateY(-110%)'; old.style.opacity = '0'; setTimeout(() => old.remove(), 300);
+    card.style.opacity = '0'; stage.appendChild(card); requestAnimationFrame(() => requestAnimationFrame(() => { card.style.opacity = ''; })); }
+  else { stage.innerHTML = ''; stage.appendChild(card); }
+}
 function swGo(step){
   if(!SW) return;
-  const to = Math.max(0, Math.min(SW.ids.length, SW.i + step));
+  const max = SW.cards ? SW.cards.length : SW.ids.length;
+  const to = Math.max(0, Math.min(max, SW.i + step));
   if(to === SW.i) return;
   SW.i = to; buzz(8);
   paintSwipe(step > 0 ? 'up' : 'down');
 }
 async function swAct(){
   if(!SW) return;
+  if(SW.cards){ if(SW.i >= SW.cards.length) return closeSwipe(); return swGo(1); }
   if(SW.i >= SW.ids.length) return closeSwipe();
   const o = swOrder(); if(!o) return;
   const nx = swMove(o);
@@ -9115,7 +9175,7 @@ function swGestures(card){
   });
   const up = () => {
     if(!down) return; down = false; card.classList.remove('drag');
-    if(!moved){ card.style.transform = ''; const o = swOrder(); if(o) openDetail(o); return; }
+    if(!moved){ card.style.transform = ''; if(SW && SW.cards) return swGo(1); const o = swOrder(); if(o) openDetail(o); return; }
     if(Math.abs(dx) > Math.abs(dy) && dx > 90){ card.style.transform = ''; swAct(); return; }
     if(Math.abs(dy) >= Math.abs(dx) && dy < -70) return swGo(1);
     if(Math.abs(dy) >= Math.abs(dx) && dy > 70) return swGo(-1);
@@ -9139,6 +9199,110 @@ document.addEventListener('keydown', e => {
   e.preventDefault();
 });
 window.__openSwipe = k => openSwipe(k);    // for the suites
+window.__weekBounds = () => weekBounds();
+
+/* ── SPAWN-142: QUICK ORDER CHIPS ──
+   The last six customers (newest first, from the orders on this phone) and
+   the six products this shop sells most (by how many orders carry them).
+   A customer chip fills the name and number; a product chip fills the first
+   empty item, or adds one. Nothing is saved until Confirm, as always. */
+function paintQuick(){
+  const box = $('#fQuick'); if(!box) return;
+  const on = NB() && canTakeOrders();
+  box.hidden = !on;
+  if(!on) return;
+  const seenNames = new Set(), cust = [];
+  [...ORDERS].filter(o => !o.voided && o.order_type !== 'government' && o.customer_name)
+    .sort((a, b) => String(b.created_at || b.order_date || '').localeCompare(String(a.created_at || a.order_date || '')) || b.jo_no - a.jo_no)
+    .forEach(o => { const k = custKey(o); if(!seenNames.has(k) && cust.length < 6){ seenNames.add(k); cust.push(o); } });
+  const count = new Map();
+  ORDERS.forEach(o => (o.jo_items || []).forEach(l => {
+    const it = ITEMS.find(i => i.name === l.item_type && !i.ask_name);
+    if(it) count.set(it.id, (count.get(it.id) || 0) + 1);
+  }));
+  const prods = ITEMS.filter(i => !i.ask_name)
+    .map(i => [i, count.get(i.id) || 0]).sort((a, b) => b[1] - a[1] || (a[0].sort_order || 0) - (b[0].sort_order || 0))
+    .slice(0, 6).map(x => x[0]);
+  const cBox = $('#fQCust'), pBox = $('#fQProd');
+  cBox.innerHTML = cust.length ? '<span class="k">Again</span>' : '';
+  cust.forEach(o => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'qchip'; b.textContent = o.customer_name;
+    b.onclick = () => {
+      $('#fCust').value = o.customer_name; $('#fPhone').value = o.customer_contact || '';
+      if($('#fFb')) $('#fFb').value = o.customer_fb || '';
+      $('#fCust').dispatchEvent(new Event('input', { bubbles: true }));
+      buzz(8);
+    };
+    cBox.appendChild(b);
+  });
+  pBox.innerHTML = prods.length ? '<span class="k">Add</span>' : '';
+  prods.forEach(it => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'qchip p'; b.textContent = it.name;
+    b.onclick = () => {
+      let n = LINES.findIndex(l => !l.itemId);
+      if(n < 0){ addLine(); n = LINES.length - 1; }
+      const sel = document.querySelectorAll('#lines .line')[n].querySelector('.r1 select');
+      sel.value = it.id; sel.dispatchEvent(new Event('change'));
+      const q = document.querySelectorAll('#lines .line')[n].querySelector('.r2 input[aria-label="Quantity"], .r2 input');
+      if(q) setTimeout(() => q.focus(), 60);
+      buzz(8);
+    };
+    pBox.appendChild(b);
+  });
+}
+
+/* ── SPAWN-142: LAST WEEK, AS A STORY (the owner) ──
+   Monday to Sunday before this week, five cards and an end card in the swipe
+   view: sales against the week before, money in, the best day, the top
+   seller, and who still owes. Read when opened - two queries - never on every
+   refresh. Voided and cancelled orders, and payments on them, do not count. */
+function weekBounds(){
+  const t = new Date(Date.parse(today() + 'T00:00:00Z'));
+  const dow = (t.getUTCDay() + 6) % 7;                 // Monday = 0
+  const mon = new Date(t - (dow + 7) * 864e5), prev = new Date(mon - 7 * 864e5), end = new Date(mon.getTime() + 7 * 864e5);
+  const f = d => d.toISOString().slice(0, 10);
+  return { prev: f(prev), mon: f(mon), end: f(end) };
+}
+async function openWeek(){
+  const B = weekBounds();
+  toast('Reading last week…');
+  const [{ data: ords }, { data: pays }, { data: dv }, { data: dc }] = await Promise.all([
+    sb.from('job_orders').select('id,total,order_date,status,voided,jo_items(item_type,line_total)')
+      .gte('order_date', B.prev).lt('order_date', B.end).limit(5000),
+    sb.from('jo_payments').select('amount,paid_at,job_order_id')
+      .gte('paid_at', new Date(B.mon + 'T00:00:00+08:00').toISOString())
+      .lt('paid_at', new Date(B.end + 'T00:00:00+08:00').toISOString()).limit(5000),
+    sb.from('job_orders').select('id').eq('voided', true).limit(5000),
+    sb.from('job_orders').select('id').eq('status', 'cancelled').limit(5000)
+  ]);
+  const gone = new Set([...(dv || []), ...(dc || [])].map(r => r.id));
+  const live = (ords || []).filter(o => !o.voided && o.status !== 'cancelled');
+  const wk = live.filter(o => o.order_date >= B.mon), pw = live.filter(o => o.order_date < B.mon);
+  const sum = a => a.reduce((t, o) => t + Number(o.total || 0), 0);
+  const sales = sum(wk), before = sum(pw);
+  const got = (pays || []).filter(p => !gone.has(p.job_order_id)).reduce((t, p) => t + Number(p.amount), 0);
+  const byDay = new Map(); wk.forEach(o => byDay.set(o.order_date, (byDay.get(o.order_date) || 0) + Number(o.total || 0)));
+  const best = [...byDay.entries()].sort((a, b) => b[1] - a[1])[0];
+  const byItem = new Map(); wk.forEach(o => (o.jo_items || []).forEach(l => byItem.set(l.item_type, (byItem.get(l.item_type) || 0) + Number(l.line_total || 0))));
+  const top = [...byItem.entries()].sort((a, b) => b[1] - a[1])[0];
+  const owed = (DASH_DATA && DASH_DATA.owed) || [];
+  const owers = new Set(owed.filter(o => o.order_type !== 'government').map(custKey)).size;
+  const owedSum = owed.reduce((t, o) => t + Number(o.balance || 0), 0);
+  const dname = d => new Date(d + 'T00:00:00Z').toLocaleDateString('en-PH', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' });
+  const range = dname(B.mon).replace(/^\w+, /, '') + ' - ' + dname(new Date(Date.parse(B.end) - 864e5).toISOString().slice(0, 10)).replace(/^\w+, /, '');
+  const vs = before > 0 ? Math.round((sales - before) / before * 100) : null;
+  SW = { key: 'week', ids: [], i: 0, cards: [
+    { icon: '\u{1F4C8}', k: 'Last week · ' + range, big: peso(sales), sub: wk.length + ' ' + (wk.length === 1 ? 'order' : 'orders') +
+      (vs === null ? '' : ' · ' + (vs >= 0 ? '+' : '') + vs + '% on the week before'), good: vs === null || vs >= 0 },
+    { icon: '\u{1F4B5}', k: 'Money in', big: peso(got), sub: 'collected from customers last week', good: true },
+    { icon: '\u{2B50}', k: 'Best day', big: best ? dname(best[0]).split(',')[0] : 'No sales yet', sub: best ? peso(best[1]) + ' in sales' : 'a quiet week', good: true },
+    { icon: '\u{1F3C6}', k: 'Top seller', big: top ? top[0] : 'Nothing yet', sub: top ? peso(top[1]) + ' in sales' : '', good: true },
+    { icon: '\u{1F4CB}', k: 'Still owed', big: peso(owedSum), sub: owers ? owers + ' ' + (owers === 1 ? 'customer still owes' : 'customers still owe') : 'nobody owes - well done', good: !owedSum }
+  ] };
+  $('#swTitle').textContent = 'Last week';
+  $('#swipe').hidden = false; document.body.style.overflow = 'hidden';
+  paintSwipe();
+}
 
 /* ── the day's goal (nb22d shops.daily_goal) ──
    Read in its own query on Spawn OS only (Decal Fix's database has no such
