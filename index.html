@@ -1822,11 +1822,29 @@
   body.nb .nbfill p{margin:0;font-size:14px;color:#5B6273;line-height:1.45}
   /* ── spawn-143: the Today card as a carousel ── */
   body.nb #hmToday{gap:8px;padding:14px 0 10px}
-  body.nb .tdcar{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;
-    -webkit-overflow-scrolling:touch}
+  body.nb #hmToday{position:relative}
+  body.nb .tdcar{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;align-items:stretch;padding:0 16px;scroll-padding:0 16px}
   body.nb .tdcar::-webkit-scrollbar{display:none}
-  body.nb .tds{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;display:grid;align-content:start;gap:12px;
-    padding:2px 16px;box-sizing:border-box;cursor:pointer;min-height:132px}
+  /* 86% wide, so the next card's edge PEEKS in from the right - the cue that
+     there is more to swipe (spawn-143b: "nothing change?" - full-width cards
+     gave no sign of it). Each card is a soft tile of its own. */
+  body.nb .tds{flex:0 0 86%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;display:grid;align-content:start;gap:10px;
+    padding:12px 14px;box-sizing:border-box;cursor:pointer;min-height:120px;border-radius:16px;background:#F7F8FB;
+    border:1px solid #EEF0F4}
+  body.nb .tds:last-child{scroll-snap-align:end}
+  body.nb #hmToday .tdchart svg{height:84px;width:100%}
+  /* the figures stay on one line inside the narrower card */
+  body.nb #hmToday .tdn b{font-size:clamp(15px,4.6vw,20px);white-space:nowrap}
+  body.nb #hmToday .tdn small{font-size:12px}
+  body.nb .tdarr{display:none}
+  @media (hover:hover) and (pointer:fine){
+    body.nb .tdarr{display:grid;place-items:center;position:absolute;top:50%;transform:translateY(-60%);width:34px;height:34px;
+      border-radius:50%;border:0;background:#fff;box-shadow:0 4px 12px -4px rgba(20,24,40,.35);font-size:22px;line-height:1;
+      color:#1E2230;cursor:pointer;z-index:1}
+    body.nb .tdarr.prev{left:4px} body.nb .tdarr.next{right:4px}
+    body.nb .tdarr:disabled{opacity:0;pointer-events:none}
+  }
   body.nb #hmToday .tdchart{border-top:0;padding-top:0}
   body.nb .tddots{display:flex;justify-content:center;gap:7px;padding-top:2px}
   body.nb .tddots button{width:8px;height:8px;padding:0;border:0;border-radius:4px;background:#D9DCE4;cursor:pointer;
@@ -2454,6 +2472,8 @@ try{
             <div class="tdchart" id="hmWeek"></div>
           </div>
         </div>
+        <button type="button" class="tdarr prev" id="hmCarPrev" aria-label="Previous card">&lsaquo;</button>
+        <button type="button" class="tdarr next" id="hmCarNext" aria-label="Next card">&rsaquo;</button>
         <div class="tddots" id="hmDots" role="tablist" aria-label="Cards">
           <button type="button" data-i="0" aria-label="Today" aria-selected="true"></button>
           <button type="button" data-i="1" aria-label="Daily goal" aria-selected="false"></button>
@@ -8880,6 +8900,7 @@ function renderHome(){
   }else $('#hmCust').textContent = 'Customers';
   $('#hmSalesTile').hidden = !nbOwner();
   paintToday();
+  setTimeout(() => { try{ paintDots(); }catch(e){} }, 0);   // the arrows' state on first draw
   paintDaySum(live);
   paintStories();
   /* the fill card: a demo shop, its owner, nothing in it yet */
@@ -8953,17 +8974,32 @@ $('#hmTodayMore').onclick = () => $('#nvSales').click();
    wheel all work and nothing fights the page's own scrolling. The dots say
    which card is showing and jump to one. A tap on a card opens what it is
    about; a button inside a card (Set goal, See sales) does its own thing. */
-const carSlide = () => { const c = $('#hmCar'); return c ? Math.round(c.scrollLeft / Math.max(1, c.clientWidth)) : 0; };
+/* the card nearest the left edge is the one showing; at the far right it is the last */
+const carSlides = () => [...document.querySelectorAll('#hmCar .tds')];
+const carSlide = () => {
+  const c = $('#hmCar'); if(!c) return 0;
+  const sl = carSlides(); if(c.scrollLeft + c.clientWidth >= c.scrollWidth - 4) return sl.length - 1;
+  let best = 0, d = 1e9;
+  sl.forEach((el, i) => { const x = Math.abs(el.offsetLeft - c.offsetLeft - 16 - c.scrollLeft); if(x < d){ d = x; best = i; } });
+  return best;
+};
+const carTo = i => {
+  const c = $('#hmCar'), el = carSlides()[i]; if(!c || !el) return;
+  c.scrollTo({ left: el.offsetLeft - c.offsetLeft - 16, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  setTimeout(paintDots, 380);
+};
 function paintDots(){
   const i = carSlide();
   document.querySelectorAll('#hmDots button').forEach(b => b.setAttribute('aria-selected', String(Number(b.dataset.i) === i)));
+  if($('#hmCarPrev')){ $('#hmCarPrev').disabled = i === 0; $('#hmCarNext').disabled = i >= carSlides().length - 1; }
 }
+$('#hmCarPrev').onclick = () => carTo(Math.max(0, carSlide() - 1));
+$('#hmCarNext').onclick = () => carTo(Math.min(carSlides().length - 1, carSlide() + 1));
 let CAR_T = 0;
 $('#hmCar').addEventListener('scroll', () => { clearTimeout(CAR_T); CAR_T = setTimeout(paintDots, 60); }, { passive: true });
 $('#hmDots').addEventListener('click', e => {
   const b = e.target.closest('button[data-i]'); if(!b) return;
-  const c = $('#hmCar'); c.scrollTo({ left: Number(b.dataset.i) * c.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-  setTimeout(paintDots, 350);
+  carTo(Number(b.dataset.i));
 });
 $('#hmCar').addEventListener('click', e => {
   if(e.target.closest('button, a')) return;
