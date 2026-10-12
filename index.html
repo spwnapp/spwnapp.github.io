@@ -1528,6 +1528,7 @@
   html.spwn .acquick .btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%}
   html.spwn .acquick svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   html.spwn .acquick .danger-text{color:#BE123C}
+  html.spwn #acSound[aria-pressed="false"]{color:#5B6273}
   /* the avatar: a round person icon in the accent colour, not a letter */
   html.spwn body .avatar.avatar{clip-path:none;border-radius:50%;background:linear-gradient(135deg,var(--acc1),var(--acc2));
     display:grid;place-items:center;box-shadow:0 6px 14px -8px var(--acc2)}
@@ -1819,12 +1820,48 @@
   body.nb .nbfill[hidden]{display:none}
   body.nb .nbfill b{font-size:17px;color:#1E2230}
   body.nb .nbfill p{margin:0;font-size:14px;color:#5B6273;line-height:1.45}
+  /* spawn-140: the work feels alive - press in, and real wins celebrated */
+  body.nb .btn,body.nb .ntile,body.nb .nbnav button,body.nb .prrow,body.nb .jo{transition:transform .09s ease, box-shadow .12s ease}
+  body.nb .btn:active,body.nb .ntile:active,body.nb .nbnav button:active,body.nb .prrow:active,body.nb .jo:active{transform:scale(.96)}
+  #cele{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;
+    background:transparent;pointer-events:none;overflow:hidden}
+  #cele:popover-open{display:grid;place-items:center}
+  #celeC{position:absolute;inset:0;width:100%;height:100%}
+  .celebox{position:relative;display:grid;justify-items:center;gap:6px;background:#fff;border-radius:26px;padding:22px 28px 20px;
+    min-width:220px;max-width:min(86vw,340px);text-align:center;box-shadow:0 24px 60px -18px rgba(20,24,40,.45);
+    animation:celeIn .42s cubic-bezier(.2,1.4,.4,1) both}
+  .celeic{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--acc1,#FFD25C),var(--acc2,#F5A300));color:var(--acc-on,#2B1D00);
+    box-shadow:0 10px 24px -10px var(--acc2,#F5A300)}
+  .celeic svg{width:40px;height:40px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+  .celebox b{font-size:24px;font-weight:800;letter-spacing:-.02em;color:#1E2230;font-variant-numeric:tabular-nums}
+  .celebox span{font-size:14.5px;font-weight:600;color:#5B6273}
+  #cele.out .celebox{animation:celeOut .3s ease both}
+  @keyframes celeIn{from{transform:scale(.6) translateY(20px);opacity:0}to{transform:none;opacity:1}}
+  @keyframes celeOut{to{transform:scale(.9);opacity:0}}
+  @media (prefers-reduced-motion:reduce){ .celebox,#cele.out .celebox{animation:none} body.nb .btn:active,body.nb .ntile:active{transform:none} }
+  /* the goal ring */
+  .tdgoal{display:none}
+  body.nb .tdgoal:not([hidden]){display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:12px}
+  body.nb .tdgoal svg{width:52px;height:52px;transform:rotate(-90deg)}
+  body.nb .tdgoal circle{fill:none;stroke-width:5}
+  body.nb .tdgoal .trk{stroke:#EEF0F4}
+  body.nb .tdgoal .arc{stroke:var(--acc2);stroke-linecap:round;stroke-dasharray:113.1;stroke-dashoffset:113.1;transition:stroke-dashoffset .8s ease}
+  body.nb .tdgoal.done .arc{stroke:#16A34A}
+  body.nb .tdgoal .tgt{display:grid;min-width:0}
+  body.nb .tdgoal .tgt b{font-size:18px;font-weight:800;color:#1E2230;font-variant-numeric:tabular-nums}
+  body.nb .tdgoal.done .tgt b{color:#15803D}
+  body.nb .tdgoal .tgt span{font-size:12.5px;color:#5B6273;font-weight:600}
+  body.nb .tdgoal .linky{margin:0;font-weight:700;color:var(--acc-ink)}
   .nbtoday{display:none}
   body.nb .nbtoday{display:grid;gap:12px;background:#fff;border-radius:22px;padding:16px 16px 12px;margin:0 0 14px;box-shadow:var(--soft)}
   body.nb .nbtoday[hidden]{display:none}
   body.nb .nbtoday .tdh{display:flex;align-items:center;justify-content:space-between;gap:8px}
   body.nb .nbtoday .tdh span{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#5B6273}
-  body.nb .nbtoday .tdh .linky{margin:0;font-weight:700;color:var(--acc-ink)}
+  body.nb .nbtoday .tdh .linky{margin:0;font-weight:700;color:var(--acc-ink);white-space:nowrap}
+  body.nb .nbtoday .tdk2{display:grid;gap:2px;min-width:0}
+  body.nb .nbtoday .tdk2 small{font-size:13px;font-weight:700;color:#1E2230}
+  body.nb .nbtoday .tdk2 small:empty{display:none}
   body.nb .nbtoday .tdn{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
   body.nb .nbtoday .tdn div{display:grid;gap:2px;min-width:0}
   body.nb .nbtoday .tdn b{font-size:19px;font-weight:800;letter-spacing:-.02em;color:#1E2230;font-variant-numeric:tabular-nums;
@@ -2291,7 +2328,13 @@ try{
            numbers, bars and line graphs are shown first? best way?"). Drawn
            from what renderSales already read - no query of its own. -->
       <section class="nbtoday" id="hmToday" hidden>
-        <div class="tdh"><span id="hmTodayK">Today</span><button type="button" class="linky" id="hmTodayMore">See sales &rsaquo;</button></div>
+        <div class="tdh"><div class="tdk2"><span id="hmTodayK">Today</span><small id="hmTodaySub"></small></div><button type="button" class="linky" id="hmTodayMore">See sales &rsaquo;</button></div>
+        <!-- spawn-140: the day's goal, filling as sales come in -->
+        <div class="tdgoal" id="hmGoal" hidden>
+          <svg viewBox="0 0 44 44" aria-hidden="true"><circle class="trk" cx="22" cy="22" r="18"/><circle class="arc" id="hmGoalArc" cx="22" cy="22" r="18"/></svg>
+          <div class="tgt"><b id="hmGoalPct">0%</b><span id="hmGoalTxt"></span></div>
+          <button type="button" class="linky" id="hmGoalSet">Set goal</button>
+        </div>
         <div class="tdn">
           <div><b id="hmTCash">₱0</b><small>Cash today</small></div>
           <div><b id="hmTSales">₱0</b><small>Sales today</small></div>
@@ -2849,6 +2892,7 @@ try{
          (Wendell: "put log out inside the avatar when clicked") -->
     <div class="acquick" id="acQuick">
       <button type="button" class="btn ghost" id="acSwitch"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m17 3 4 4-4 4"/><path d="M21 7H5"/><path d="m7 21-4-4 4-4"/><path d="M3 17h16"/></svg>Switch person</button>
+      <button type="button" class="btn ghost" id="acSound" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg><span id="acSoundT">Celebration sounds: On</span></button>
       <button type="button" class="btn ghost danger-text" id="acSignOut"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>Sign out of this device</button>
     </div>
 
@@ -2899,6 +2943,12 @@ try{
 <!-- order detail -->
 <!-- Shown once a job order saves. Nothing prints by itself: the only printout
      is the claim stub, and only from its button. -->
+<!-- spawn-140: a real win gets a moment. A popover, so it sits above any open
+     dialog (the receipt, the order) - an ordinary overlay cannot. -->
+<div id="cele" popover="manual" aria-live="polite">
+  <canvas id="celeC" aria-hidden="true"></canvas>
+  <div class="celebox"><div class="celeic" id="celeIc"></div><b id="celeT"></b><span id="celeS"></span></div>
+</div>
 <dialog id="rcptDlg">
   <div class="rchead">
     <div>
@@ -3826,6 +3876,7 @@ async function loadBrand(){
      Decal Fix, whose database has no `bg` column, and naming it there would
      stop Decal Fix opening. Shown at once from this phone's copy, then
      corrected from the database. A failed read keeps what the phone had. */
+  loadGoal().then(() => { if(NB() && !$('#vHome').hidden) renderHome(); });
   SHOP_BG = c && c.shop === SHOP.id ? (c.bg || null) : null;
   applyBg(SHOP_BG);
   try{
@@ -7335,7 +7386,10 @@ $('#save').onclick = async () => {
     }
     SAVE_ID = null; PAY_ID = null;    // this attempt is finished either way
     toast('JO ' + fresh.jo_no + ' saved');
+    const firstToday = NB() && !ORDERS.some(o => o.id !== fresh.id && !o.voided && o.status !== 'cancelled' &&
+                                             (o.order_date || today()) === today());
     showReceipt(fresh);      // on screen; the claim stub prints only from its button
+    if(firstToday) celebrate('sun', 'First order today!', 'JO ' + fresh.jo_no + ' - the day has started');
 
     /* The files picked on the form go up now, because only now is there a
        JO number to make the order's folder from. The receipt shows how they
@@ -7721,7 +7775,8 @@ function openAccount(){
      with no worker simply keeps the line it already has. */
   cacheName().then(n => { if(n && acctDlg.open) $('#acMeta').textContent = meta + ' · ' + n; });
   $('#acStaff').hidden = !STAFF;
-  $('#acSwitch').hidden = !onRoster().length;       // nobody to switch to without a roster
+  $('#acSwitch').hidden = !onRoster().length;
+  paintSoundBtn();       // nobody to switch to without a roster
   $('#acNone').hidden = !!STAFF;
   $('#acAdmin').hidden = !canAddDevice();         // Add a device, People and Gmail
   ['#nName','#nPin','#pOld','#pNew','#pNew2'].forEach(s => { $(s).value = ''; });
@@ -8730,6 +8785,7 @@ function paintToday(){
   const due   = owed.reduce((s, o) => s + Number(o.balance || 0), 0);
   $('#hmTCash').textContent = peso(cash);
   $('#hmTSales').textContent = peso(sales);
+  paintGoal(sales);
   $('#hmTOwed').textContent = peso(due);
   $('#hmTOwed').classList.toggle('owed', due > 0);
   const days = [...Array(7)].map((_, i) => new Date(Date.parse(t + 'T00:00:00Z') - (6 - i) * 864e5).toISOString().slice(0, 10));
@@ -8751,6 +8807,132 @@ function paintToday(){
   $('#hmWeekK').textContent = week > 0 ? 'Collected in the last 7 days: ' + peso(week) : 'Nothing collected in the last 7 days.';
 }
 $('#hmTodayMore').onclick = () => $('#nvSales').click();
+
+/* ── SPAWN-140: IT FEELS ALIVE ──
+   Wendell: "make everything so easy that they will be addicted ... like
+   facebook reels ... dopamine". The rewards land on FINISHING WORK - money in,
+   a job released, the first order of the day, the day's goal - never on
+   scrolling, and never random: a counter serving a customer must not have the
+   app competing for their eyes. Spawn OS only. */
+const CELE_ICONS = {
+  check: '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>',
+  coin:  '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 8h4.5a2.5 2.5 0 0 1 0 5H9V8zm0 5v4M7.5 10.5h9"/></svg>',
+  sun:   '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  star:  '<svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>'
+};
+const soundOn = () => { try{ return localStorage.getItem('df_sound') !== '0'; }catch(e){ return true; } };
+const buzz = pat => { try{ if(NB() && navigator.vibrate) navigator.vibrate(pat); }catch(e){} };
+let AUDIO = null;
+function chime(){
+  if(!soundOn()) return;
+  try{
+    AUDIO = AUDIO || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = AUDIO.currentTime;
+    [[784, 0], [1046.5, .09], [1318.5, .18]].forEach(([f, at]) => {       // G5, C6, E6 - short and bright
+      const o = AUDIO.createOscillator(), g = AUDIO.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t0 + at); g.gain.linearRampToValueAtTime(.12, t0 + at + .02);
+      g.gain.exponentialRampToValueAtTime(.001, t0 + at + .35);
+      o.connect(g).connect(AUDIO.destination); o.start(t0 + at); o.stop(t0 + at + .4);
+    });
+  }catch(e){}
+}
+function confetti(canvas){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const dpr = devicePixelRatio || 1, W = canvas.clientWidth, H = canvas.clientHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  const x = canvas.getContext('2d'); x.scale(dpr, dpr);
+  const cs = getComputedStyle(document.body);
+  const cols = [cs.getPropertyValue('--acc1').trim() || '#FFD25C', cs.getPropertyValue('--acc2').trim() || '#F5A300',
+                '#16A34A', '#0EA5E9', '#EC4899', '#FACC15'];
+  const P = Array.from({ length: 90 }, () => ({ x: W / 2, y: H * .42, vx: (Math.random() - .5) * 11, vy: -Math.random() * 12 - 3,
+    r: 3 + Math.random() * 4, c: cols[(Math.random() * cols.length) | 0], a: Math.random() * 6, va: (Math.random() - .5) * .3 }));
+  const end = performance.now() + 1500;
+  (function step(now){
+    x.clearRect(0, 0, W, H);
+    P.forEach(p => { p.vy += .32; p.x += p.vx; p.y += p.vy; p.a += p.va;
+      x.save(); x.translate(p.x, p.y); x.rotate(p.a); x.fillStyle = p.c; x.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); x.restore(); });
+    if(now < end) requestAnimationFrame(step); else x.clearRect(0, 0, W, H);
+  })(performance.now());
+}
+let CELE_T = 0;
+window.__celebrations = [];                      // for the suites: what was celebrated, in order
+window.__celebrate = (...a) => celebrate(...a);  // for the suites and screenshots
+function celebrate(kind, title, sub){
+  if(!NB()) return;
+  window.__celebrations.push(title);
+  const el = $('#cele');
+  buzz([14, 40, 22]); chime();
+  if(!el || typeof el.showPopover !== 'function'){ toast(title + (sub ? ' - ' + sub : '')); return; }
+  $('#celeIc').innerHTML = CELE_ICONS[kind] || CELE_ICONS.check;
+  $('#celeT').textContent = title; $('#celeS').textContent = sub || '';
+  clearTimeout(CELE_T); el.classList.remove('out');
+  try{ el.hidePopover(); }catch(e){}
+  el.showPopover();
+  confetti($('#celeC'));
+  CELE_T = setTimeout(() => { el.classList.add('out'); CELE_T = setTimeout(() => { try{ el.hidePopover(); }catch(e){} el.classList.remove('out'); }, 300); }, 1700);
+}
+/* a light tap under the thumb on every button press, phones only */
+document.addEventListener('pointerdown', e => {
+  if(e.pointerType === 'touch' && e.target.closest('button, .ntile, .prrow, .jo')) buzz(8);
+}, { passive: true });
+function paintSoundBtn(){
+  const on = soundOn();
+  $('#acSound').setAttribute('aria-pressed', String(on));
+  $('#acSoundT').textContent = 'Celebration sounds: ' + (on ? 'On' : 'Off');
+}
+$('#acSound').onclick = () => {
+  try{ localStorage.setItem('df_sound', soundOn() ? '0' : '1'); }catch(e){}
+  paintSoundBtn();
+  if(soundOn()) chime();
+};
+
+/* ── the day's goal (nb22d shops.daily_goal) ──
+   Read in its own query on Spawn OS only (Decal Fix's database has no such
+   column). Measured against SALES TODAY - what was booked - because the goal
+   is a sales goal. Celebrated once a day per shop, on this phone. */
+let SHOP_GOAL = null;
+async function loadGoal(){
+  if(!NB()) return;
+  try{
+    const { data, error } = await sb.from('shops').select('daily_goal').eq('id', SHOP.id).limit(1);
+    if(!error && data && data[0]) SHOP_GOAL = Number(data[0].daily_goal) > 0 ? Number(data[0].daily_goal) : null;
+  }catch(e){}
+}
+function paintGoal(sales){
+  const box = $('#hmGoal'); if(!box) return;
+  box.hidden = !nbOwner();
+  if(box.hidden) return;
+  const g = SHOP_GOAL;
+  const pct = g ? Math.min(100, Math.round(sales / g * 100)) : 0;
+  $('#hmGoalArc').style.strokeDashoffset = String(113.1 * (1 - pct / 100));
+  box.classList.toggle('done', !!g && pct >= 100);
+  $('#hmGoalPct').textContent = g ? pct + '%' : 'No goal yet';
+  $('#hmGoalTxt').textContent = g ? peso(sales) + ' of ' + peso(g) + ' goal' : 'Set a daily sales goal to fill this ring';
+  $('#hmGoalSet').textContent = g ? 'Change' : 'Set goal';
+  if(g && pct >= 100){
+    const k = 'df_goalhit', mark = SHOP.id + '|' + today();
+    let seen = ''; try{ seen = localStorage.getItem(k) || ''; }catch(e){}
+    if(seen !== mark){
+      try{ localStorage.setItem(k, mark); }catch(e){}
+      setTimeout(() => celebrate('star', 'Goal reached!', peso(sales) + ' in sales today'), 400);
+    }
+  }
+}
+$('#hmGoalSet').onclick = async () => {
+  try{ assertWritable(); }catch(err){ return toast(err.message); }
+  const raw = await ask('How much in sales do you want each day? The ring on Home fills as the orders come in.',
+    { head: 'Daily sales goal', input: 'Goal in pesos', yes: 'Save goal', no: 'Cancel' });
+  if(raw === null || raw === false) return;
+  const n = Number(String(raw).replace(/[₱,\s]/g, ''));
+  if(!Number.isFinite(n) || n < 0 || n > 100000000) return toast('Type the goal as a number, like 5000.');
+  const goal = n > 0 ? Math.round(n * 100) / 100 : null;
+  const { data, error } = await sb.from('shops').update({ daily_goal: goal }).eq('id', SHOP.id).select('daily_goal');
+  if(error || !data || !data.length) return toast('The goal could not be saved yet - try again later.');
+  SHOP_GOAL = goal;
+  renderHome();
+  toast(goal ? 'Daily goal: ' + peso(goal) : 'Daily goal cleared');
+};
 /* "Today: 6 orders · P8,150 collected · 2 still owe". Orders taken today
    (a just-saved order has no order_date until the next read - the
    database stamps it - so it counts as today); money that came in today on
@@ -8775,9 +8957,11 @@ function paintDaySum(live){
   }
   if(owe) parts.push('<span class="owe"><b>' + owe + '</b> still ' + (owe === 1 ? 'owes' : 'owe') + '</span>');
   if(inCard){
-    const bits = ['Today', mine.length ? mine.length + ' ' + (mine.length === 1 ? 'order' : 'orders') : 'no orders yet'];
+    /* "Today" stays the heading; the count is a line under it - on one line
+       with "See sales" it wrapped both at 360px */
+    const bits = [mine.length ? mine.length + ' ' + (mine.length === 1 ? 'order' : 'orders') : 'No orders yet'];
     if(owe) bits.push(owe + ' still ' + (owe === 1 ? 'owes' : 'owe'));
-    $('#hmTodayK').textContent = bits.join(' · ');
+    $('#hmTodaySub').textContent = bits.join(' · ');
     return;
   }
   el.innerHTML = '<span class="k">Today</span>' + parts.join('<span class="sep">·</span>');
@@ -10599,6 +10783,12 @@ $('#dNext').onclick = async () => {
   // moving off for_approval IS the approval, so it is recorded as one
   if(approving) await recordReview('approved', null);
   dlg.close();
+  if(NB() && nx === 'claimed'){
+    const t = today();
+    const n = ORDERS.filter(o => o.id !== CUR.id && o.status === 'claimed' && o.claimed_at &&
+      new Date(o.claimed_at).toLocaleDateString('en-CA', { timeZone:'Asia/Manila' }) === t).length + 1;
+    celebrate('check', 'Released!', n === 1 ? 'The first job out today' : n + ' jobs released today');
+  }
   toast('JO ' + CUR.jo_no + (to ? ' sent to ' + artistName(to)
         : approving ? ' approved → ' + LABEL[nx] : ' → ' + LABEL[nx]));
   refresh();
@@ -11224,6 +11414,7 @@ $('#pySave').onclick = async () => {
   if(error) return bad(await payRefused(error));
   payDlg.close(); dlg.close();
   toast('Collected ' + peso(amt) + ' · ' + PM_LABEL[PPM.get()]);
+  celebrate('coin', peso(amt) + ' collected!', PM_LABEL[PPM.get()] + ' · ' + (CUR ? 'JO ' + CUR.jo_no : ''));
   refresh();
 };
 $('#dVoid').onclick = async () => {
